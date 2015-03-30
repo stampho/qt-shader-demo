@@ -218,7 +218,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QOpenGLWidget" name="openGLWidget">
+        <widget class="GLWidget" name="openGLWidget">
          <property name="minimumSize">
           <size>
            <width>640</width>
@@ -235,6 +235,13 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>GLWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>glwidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
