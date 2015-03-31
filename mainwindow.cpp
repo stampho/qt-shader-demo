@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_ui(new Ui::MainWindow)
     , m_rotateSliderTimer(new QTimer(this))
+    , m_rotateAnimTimer(new QTimer(this))
     , m_grabbedRotateSlider(0)
 {
     m_ui->setupUi(this);
@@ -24,6 +25,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->xRotateSlider, SIGNAL(sliderMoved(int)), this, SLOT(onRotateSliderMoved()));
 
     connect(m_rotateSliderTimer, SIGNAL(timeout()), this, SLOT(rotateObject()));
+    connect(m_rotateAnimTimer, SIGNAL(timeout()), this, SLOT(rotateObject()));
+
+    connect(m_ui->objectAnimationSlider, SIGNAL(valueChanged(int)), this, SLOT(setAnimationSpeed(int)));
 }
 
 MainWindow::~MainWindow()
@@ -47,6 +51,27 @@ void MainWindow::onRotateSliderMoved()
 
 void MainWindow::rotateObject()
 {
-    Axis axis = (m_grabbedRotateSlider->orientation() == Qt::Vertical) ? X_AXIS : Y_AXIS;
-    m_ui->openGLWidget->rotate(m_grabbedRotateSlider->sliderPosition(), axis);
+    const int timerId = dynamic_cast<QTimer *>(sender())->timerId();
+
+    if (timerId == m_rotateSliderTimer->timerId()) {
+        Axis axis = (m_grabbedRotateSlider->orientation() == Qt::Vertical) ? X_AXIS : Y_AXIS;
+        m_ui->openGLWidget->rotate(m_grabbedRotateSlider->sliderPosition(), axis);
+        return;
+    }
+
+    if (timerId == m_rotateAnimTimer->timerId()) {
+        m_ui->openGLWidget->rotate(2, Y_AXIS);
+        return;
+    }
+}
+
+void MainWindow::setAnimationSpeed(int speed)
+{
+    if (!speed) {
+        m_rotateAnimTimer->stop();
+        return;
+    }
+
+    int max = m_ui->objectAnimationSlider->maximum();
+    m_rotateAnimTimer->start(max - speed);
 }
