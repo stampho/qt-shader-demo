@@ -6,6 +6,12 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLWidget>
 
+enum Axis {
+    X_AXIS = 0b100,
+    Y_AXIS = 0b010,
+    Z_AXIS = 0b001
+};
+
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
@@ -13,6 +19,8 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 public:
     GLWidget(QWidget *parent = 0);
     ~GLWidget();
+
+    void rotate(int angle, Axis axis);
 
 protected:
     void initializeGL();
@@ -30,6 +38,8 @@ private:
     QVector<QVector3D> m_colors;
 
     double m_distance;
+    int m_yRotateAngle;
+    int m_xRotateAngle;
 };
 
 #endif // GLWIDGET_H

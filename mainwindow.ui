@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>933</width>
-    <height>563</height>
+    <width>1069</width>
+    <height>793</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -114,8 +114,8 @@
         <height>0</height>
        </size>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
         <widget class="QWidget" name="slidersWidget" native="true">
          <property name="maximumSize">
           <size>
@@ -217,7 +217,23 @@
          </layout>
         </widget>
        </item>
-       <item>
+       <item row="0" column="1">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Maximum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>60</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0">
         <widget class="GLWidget" name="openGLWidget">
          <property name="minimumSize">
           <size>
@@ -226,6 +242,57 @@
           </size>
          </property>
         </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSlider" name="xRotateSlider">
+         <property name="minimum">
+          <number>-50</number>
+         </property>
+         <property name="maximum">
+          <number>50</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::NoTicks</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QSlider" name="yRotateSlider">
+         <property name="minimum">
+          <number>-50</number>
+         </property>
+         <property name="maximum">
+          <number>50</number>
+         </property>
+         <property name="tracking">
+          <bool>true</bool>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="tickPosition">
+          <enum>QSlider::NoTicks</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Maximum</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>

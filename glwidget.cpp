@@ -29,8 +29,9 @@ const char *GLWidget::fragmentShaderCode =
 GLWidget::GLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
 {
-    //m_distance = 2.5;
     m_distance = 5.0;
+    m_yRotateAngle = 25;
+    m_xRotateAngle = -25;
 }
 
 GLWidget::~GLWidget()
@@ -135,9 +136,13 @@ void GLWidget::paintGL()
     QMatrix4x4 mMatrix;
     QMatrix4x4 vMatrix;
 
-    QVector3D eye(0, 0, m_distance);
+    QMatrix4x4 cameraTransformation;
+    cameraTransformation.rotate(m_yRotateAngle, 0, 1, 0);
+    cameraTransformation.rotate(m_xRotateAngle, 1, 0, 0);
+
+    QVector3D eye = cameraTransformation * QVector3D(0, 0, m_distance);
     QVector3D center(0, 0, 0);
-    QVector3D up(0, 1, 0);
+    QVector3D up = cameraTransformation * QVector3D(0, 1, 0);
     vMatrix.lookAt(eye, center, up);
 
     m_shaderProgram.bind();
@@ -155,4 +160,24 @@ void GLWidget::paintGL()
     m_shaderProgram.disableAttributeArray("color");
 
     m_shaderProgram.release();
+}
+
+void GLWidget::rotate(int angle, Axis axis)
+{
+    switch(axis){
+    case Y_AXIS:
+        m_yRotateAngle += angle;
+        while (m_yRotateAngle < 0)  m_yRotateAngle += 360;
+        while (m_yRotateAngle >= 360) m_yRotateAngle -= 360;
+        update();
+        break;
+    case X_AXIS:
+        m_xRotateAngle += angle;
+        while (m_xRotateAngle < 0)  m_xRotateAngle += 360;
+        while (m_xRotateAngle >= 360) m_xRotateAngle -= 360;
+        update();
+        break;
+    default:
+        return;
+    }
 }
