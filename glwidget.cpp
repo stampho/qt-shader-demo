@@ -1,5 +1,7 @@
 #include "glwidget.h"
 
+#include <QWheelEvent>
+
 const char *GLWidget::vertexShaderCode =
         "#version 330\n"
 
@@ -180,4 +182,20 @@ void GLWidget::rotate(int angle, Axis axis)
     default:
         return;
     }
+}
+
+void GLWidget::wheelEvent(QWheelEvent *event)
+{
+    int delta = event->delta();
+
+    if (event->orientation() == Qt::Vertical) {
+        if (delta < 0)
+            m_distance *= 1.1;
+        else if (delta > 0)
+            m_distance *= 0.9;
+
+        update();
+    }
+
+    event->accept();
 }

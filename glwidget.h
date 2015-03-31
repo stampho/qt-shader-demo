@@ -6,6 +6,8 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLWidget>
 
+class QWheelEvent;
+
 enum Axis {
     X_AXIS = 0b100,
     Y_AXIS = 0b010,
@@ -26,6 +28,8 @@ protected:
     void initializeGL();
     void resizeGL(int width, int height);
     void paintGL();
+
+    void wheelEvent(QWheelEvent *event);
 
 private:
     static const char *vertexShaderCode;
