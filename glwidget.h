@@ -2,6 +2,7 @@
 #define GLWIDGET_H
 
 #include <QMatrix4x4>
+#include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLWidget>
@@ -41,8 +42,8 @@ private:
     QMatrix4x4 m_projection;
     QOpenGLShaderProgram m_shaderProgram;
 
-    QVector<QVector3D> m_vertices;
-    QVector<QVector3D> m_colors;
+    QOpenGLBuffer m_vertexBuffer;
+    int m_vertexCount;
 
     double m_distance;
     int m_yRotateAngle;

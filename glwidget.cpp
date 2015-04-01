@@ -48,7 +48,7 @@ void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, GLWidget::vertexShaderCode);
@@ -57,11 +57,11 @@ void GLWidget::initializeGL()
 
     const int cubeVertices[][3] = {
         // Bottom
-        {-1, -1,  1}, {-1, -1, -1}, { 1, -1,  1},
-        { 1, -1,  1}, { 1, -1, -1}, {-1, -1, -1},
+        { 1, -1,  1}, {-1, -1,  1}, {-1, -1, -1},
+        {-1, -1, -1}, { 1, -1, -1}, { 1, -1,  1},
 
         // Top
-        {-1,  1,  1}, {-1,  1, -1}, { 1,  1,  1},
+        {-1,  1, -1}, {-1,  1,  1}, { 1,  1,  1},
         { 1,  1,  1}, { 1,  1, -1}, {-1,  1, -1},
 
         // Left
@@ -69,16 +69,16 @@ void GLWidget::initializeGL()
         {-1,  1, -1}, {-1, -1, -1}, {-1, -1,  1},
 
         // Right
-        { 1, -1,  1}, { 1,  1,  1}, { 1,  1, -1},
-        { 1,  1, -1}, { 1, -1, -1}, { 1, -1,  1},
+        { 1,  1, -1}, { 1,  1,  1}, { 1, -1,  1},
+        { 1, -1,  1}, { 1, -1, -1}, { 1,  1, -1},
 
         // Back
-        {-1, -1, -1}, {-1,  1, -1}, {  1, -1, -1},
-        { 1, -1, -1}, { 1,  1, -1}, { -1,  1, -1},
+        {-1, -1, -1}, {-1,  1, -1}, {  1,  1, -1},
+        { 1,  1, -1}, { 1, -1, -1}, { -1, -1, -1},
 
         // Front
-        {-1, -1,  1}, {-1,  1,  1}, {  1, -1,  1},
-        { 1, -1,  1}, { 1,  1,  1}, { -1,  1,  1},
+        {-1, -1,  1}, { 1, -1,  1}, {  1,  1,  1},
+        { 1,  1,  1}, {-1,  1,  1}, { -1, -1,  1},
     };
 
     const int cubeColors[][3] = {
@@ -108,20 +108,34 @@ void GLWidget::initializeGL()
 
     };
 
+    m_vertexCount = sizeof(cubeVertices) / (3 * sizeof(int));
+
+    QVector<QVector3D> vertexVector;
+    QVector<QVector3D> colorVector;
+
     int x, y, z;
     int r, g, b;
-    int vertexCount = sizeof(cubeVertices) / (3 * sizeof(int));
-    for (int i = 0; i < vertexCount; ++i) {
+    for (int i = 0; i < m_vertexCount; ++i) {
         x = cubeVertices[i][0];
         y = cubeVertices[i][1];
         z = cubeVertices[i][2];
-        m_vertices << QVector3D(x, y, z);
+        vertexVector << QVector3D(x, y, z);
 
         r = cubeColors[i][0];
         g = cubeColors[i][1];
         b = cubeColors[i][2];
-        m_colors << QVector3D(r, g, b);
+        colorVector << QVector3D(r, g, b);
     }
+
+    m_vertexBuffer.create();
+    m_vertexBuffer.bind();
+    m_vertexBuffer.allocate(m_vertexCount * (3 + 3) * sizeof(GLfloat));
+
+    int offset = 0;
+    m_vertexBuffer.write(offset, vertexVector.constData(), m_vertexCount * 3 * sizeof(GLfloat));
+    offset += m_vertexCount * 3 * sizeof(GLfloat);
+    m_vertexBuffer.write(offset, colorVector.constData(), m_vertexCount * 3 * sizeof(GLfloat));
+    m_vertexBuffer.release();
 }
 
 void GLWidget::resizeGL(int width, int height)
@@ -156,13 +170,17 @@ void GLWidget::paintGL()
     m_shaderProgram.bind();
     m_shaderProgram.setUniformValue("mvpMatrix", m_projection * vMatrix * mMatrix);
 
-    m_shaderProgram.setAttributeArray("vertex", m_vertices.constData());
+    m_vertexBuffer.bind();
+    int offset = 0;
+    m_shaderProgram.setAttributeBuffer("vertex", GL_FLOAT, offset, 3, 0);
     m_shaderProgram.enableAttributeArray("vertex");
 
-    m_shaderProgram.setAttributeArray("color", m_colors.constData());
+    offset += m_vertexCount * 3 * sizeof(GLfloat);
+    m_shaderProgram.setAttributeBuffer("color", GL_FLOAT, offset, 3, 0);
     m_shaderProgram.enableAttributeArray("color");
+    m_vertexBuffer.release();
 
-    glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+    glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
 
     m_shaderProgram.disableAttributeArray("vertex");
     m_shaderProgram.disableAttributeArray("color");
