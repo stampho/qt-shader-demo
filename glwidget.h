@@ -7,6 +7,7 @@
 #include <QOpenGLWidget>
 
 class QWheelEvent;
+class QMouseEvent;
 
 enum Axis {
     X_AXIS = 0b100,
@@ -29,6 +30,8 @@ protected:
     void resizeGL(int width, int height);
     void paintGL();
 
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
 
 private:
@@ -44,6 +47,10 @@ private:
     double m_distance;
     int m_yRotateAngle;
     int m_xRotateAngle;
+    double m_xCameraPosition;
+    double m_yCameraPosition;
+
+    QPoint m_lastMousePosition;
 };
 
 #endif // GLWIDGET_H

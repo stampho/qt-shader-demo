@@ -1,5 +1,6 @@
 #include "glwidget.h"
 
+#include <QMouseEvent>
 #include <QWheelEvent>
 
 const char *GLWidget::vertexShaderCode =
@@ -34,6 +35,8 @@ GLWidget::GLWidget(QWidget *parent)
     m_distance = 5.0;
     m_yRotateAngle = 25;
     m_xRotateAngle = -25;
+    m_xCameraPosition = 0.0;
+    m_yCameraPosition = 0.0;
 }
 
 GLWidget::~GLWidget()
@@ -138,13 +141,16 @@ void GLWidget::paintGL()
     QMatrix4x4 mMatrix;
     QMatrix4x4 vMatrix;
 
-    QMatrix4x4 cameraTransformation;
-    cameraTransformation.rotate(m_yRotateAngle, 0, 1, 0);
-    cameraTransformation.rotate(m_xRotateAngle, 1, 0, 0);
+    QMatrix4x4 rotationMatrix;
+    rotationMatrix.rotate(m_yRotateAngle, 0, 1, 0);
+    rotationMatrix.rotate(m_xRotateAngle, 1, 0, 0);
+    mMatrix *= rotationMatrix;
 
-    QVector3D eye = cameraTransformation * QVector3D(0, 0, m_distance);
-    QVector3D center(0, 0, 0);
-    QVector3D up = cameraTransformation * QVector3D(0, 1, 0);
+    QMatrix4x4 translationMatrix;
+    translationMatrix.translate(m_xCameraPosition, m_yCameraPosition, 0);
+    QVector3D eye = translationMatrix * QVector3D(0, 0, m_distance);
+    QVector3D center = translationMatrix * QVector3D(0, 0, 0);
+    QVector3D up = QVector3D(0, 1, 0);
     vMatrix.lookAt(eye, center, up);
 
     m_shaderProgram.bind();
@@ -182,6 +188,28 @@ void GLWidget::rotate(int angle, Axis axis)
     default:
         return;
     }
+}
+
+void GLWidget::mousePressEvent(QMouseEvent *event)
+{
+    m_lastMousePosition = event->pos();
+    event->accept();
+}
+
+void GLWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    int deltaX = event->x() - m_lastMousePosition.x();
+    int deltaY = event->y() - m_lastMousePosition.y();
+
+    if (event->buttons() & Qt::LeftButton) {
+        // TODO(pvarga): The step of movement should depend on m_distance too.
+        m_xCameraPosition -= (double)deltaX / 100.0;
+        m_yCameraPosition += (double)deltaY / 100.0;
+        update();
+    }
+
+    m_lastMousePosition = event->pos();
+    event->accept();
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
