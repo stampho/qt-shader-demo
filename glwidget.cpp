@@ -3,6 +3,8 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
+#include "globjectdescriptor.h"
+
 const char *GLWidget::vertexShaderCode =
         "#version 330\n"
 
@@ -31,6 +33,7 @@ const char *GLWidget::fragmentShaderCode =
 
 GLWidget::GLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
+    , m_objectDescriptor(0)
 {
     m_distance = 5.0;
     m_yRotateAngle = 25;
@@ -55,86 +58,17 @@ void GLWidget::initializeGL()
     m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, GLWidget::fragmentShaderCode);
     m_shaderProgram.link();
 
-    const int cubeVertices[][3] = {
-        // Bottom
-        { 1, -1,  1}, {-1, -1,  1}, {-1, -1, -1},
-        {-1, -1, -1}, { 1, -1, -1}, { 1, -1,  1},
-
-        // Top
-        {-1,  1, -1}, {-1,  1,  1}, { 1,  1,  1},
-        { 1,  1,  1}, { 1,  1, -1}, {-1,  1, -1},
-
-        // Left
-        {-1, -1,  1}, {-1,  1,  1}, {-1,  1, -1},
-        {-1,  1, -1}, {-1, -1, -1}, {-1, -1,  1},
-
-        // Right
-        { 1,  1, -1}, { 1,  1,  1}, { 1, -1,  1},
-        { 1, -1,  1}, { 1, -1, -1}, { 1,  1, -1},
-
-        // Back
-        {-1, -1, -1}, {-1,  1, -1}, {  1,  1, -1},
-        { 1,  1, -1}, { 1, -1, -1}, { -1, -1, -1},
-
-        // Front
-        {-1, -1,  1}, { 1, -1,  1}, {  1,  1,  1},
-        { 1,  1,  1}, {-1,  1,  1}, { -1, -1,  1},
-    };
-
-    const int cubeColors[][3] = {
-        // Bottom
-        {1, 0, 0}, {1, 0, 0}, {1, 0, 0},
-        {1, 0, 0}, {1, 0, 0}, {1, 0, 0},
-
-        // Top
-        {0, 1, 0}, {0, 1, 0}, {0, 1, 0},
-        {0, 1, 0}, {0, 1, 0}, {0, 1, 0},
-
-        // Left
-        {1, 1, 0}, {1, 1, 0}, {1, 1, 0},
-        {1, 1, 0}, {1, 1, 0}, {1, 1, 0},
-
-        // Right
-        {0, 0, 1}, {0, 0, 1}, {0, 0, 1},
-        {0, 0, 1}, {0, 0, 1}, {0, 0, 1},
-
-        // Back
-        {1, 0, 1}, {1, 0, 1}, {1, 0, 1},
-        {1, 0, 1}, {1, 0, 1}, {1, 0, 1},
-
-        // Front
-        {0, 1, 1}, {0, 1, 1}, {0, 1, 1},
-        {0, 1, 1}, {0, 1, 1}, {0, 1, 1},
-
-    };
-
-    m_vertexCount = sizeof(cubeVertices) / (3 * sizeof(int));
-
-    QVector<QVector3D> vertexVector;
-    QVector<QVector3D> colorVector;
-
-    int x, y, z;
-    int r, g, b;
-    for (int i = 0; i < m_vertexCount; ++i) {
-        x = cubeVertices[i][0];
-        y = cubeVertices[i][1];
-        z = cubeVertices[i][2];
-        vertexVector << QVector3D(x, y, z);
-
-        r = cubeColors[i][0];
-        g = cubeColors[i][1];
-        b = cubeColors[i][2];
-        colorVector << QVector3D(r, g, b);
-    }
+    m_objectDescriptor.reset(GLObjectDescriptor::createCubeDescriptor());
+    int vertexCount = m_objectDescriptor->getVertexCount();
 
     m_vertexBuffer.create();
     m_vertexBuffer.bind();
-    m_vertexBuffer.allocate(m_vertexCount * (3 + 3) * sizeof(GLfloat));
+    m_vertexBuffer.allocate(vertexCount * (3 + 3) * sizeof(GLfloat));
 
     int offset = 0;
-    m_vertexBuffer.write(offset, vertexVector.constData(), m_vertexCount * 3 * sizeof(GLfloat));
-    offset += m_vertexCount * 3 * sizeof(GLfloat);
-    m_vertexBuffer.write(offset, colorVector.constData(), m_vertexCount * 3 * sizeof(GLfloat));
+    m_vertexBuffer.write(offset, m_objectDescriptor->getVertices().constData(), vertexCount * 3 * sizeof(GLfloat));
+    offset += vertexCount * 3 * sizeof(GLfloat);
+    m_vertexBuffer.write(offset, m_objectDescriptor->getColors().constData(), vertexCount * 3 * sizeof(GLfloat));
     m_vertexBuffer.release();
 }
 
@@ -170,17 +104,22 @@ void GLWidget::paintGL()
     m_shaderProgram.bind();
     m_shaderProgram.setUniformValue("mvpMatrix", m_projection * vMatrix * mMatrix);
 
-    m_vertexBuffer.bind();
     int offset = 0;
+    int vertexCount = m_objectDescriptor->getVertexCount();
+
+    m_vertexBuffer.bind();
     m_shaderProgram.setAttributeBuffer("vertex", GL_FLOAT, offset, 3, 0);
     m_shaderProgram.enableAttributeArray("vertex");
 
-    offset += m_vertexCount * 3 * sizeof(GLfloat);
-    m_shaderProgram.setAttributeBuffer("color", GL_FLOAT, offset, 3, 0);
-    m_shaderProgram.enableAttributeArray("color");
+    if (m_objectDescriptor->hasColors()) {
+        offset += vertexCount * 3 * sizeof(GLfloat);
+        m_shaderProgram.setAttributeBuffer("color", GL_FLOAT, offset, 3, 0);
+        m_shaderProgram.enableAttributeArray("color");
+    }
+
     m_vertexBuffer.release();
 
-    glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
+    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 
     m_shaderProgram.disableAttributeArray("vertex");
     m_shaderProgram.disableAttributeArray("color");

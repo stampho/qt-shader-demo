@@ -7,6 +7,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLWidget>
 
+class GLObjectDescriptor;
 class QWheelEvent;
 class QMouseEvent;
 
@@ -43,7 +44,7 @@ private:
     QOpenGLShaderProgram m_shaderProgram;
 
     QOpenGLBuffer m_vertexBuffer;
-    int m_vertexCount;
+    QScopedPointer<GLObjectDescriptor> m_objectDescriptor;
 
     double m_distance;
     int m_yRotateAngle;
