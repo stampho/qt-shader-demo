@@ -40,9 +40,6 @@ protected:
     void wheelEvent(QWheelEvent *event);
 
 private:
-    static const char *vertexShaderCode;
-    static const char *fragmentShaderCode;
-
     QMatrix4x4 m_projection;
     QOpenGLShaderProgram m_shaderProgram;
 

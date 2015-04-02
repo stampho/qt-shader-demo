@@ -2,6 +2,8 @@
 #define GLOBJECTDESCRIPTOR_H
 
 #include <QScopedPointer>
+#include <QString>
+#include <QStringList>
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector>
@@ -30,6 +32,9 @@ public:
     QSize getTextureImageSize();
 
     int getVertexCount() const { return m_vertices.count(); }
+
+    QString getVertexShaderCode() const { return m_vertexShaderCode.join("\n"); }
+    QString getFragmentShaderCode() const { return m_fragmentShaderCode.join("\n"); }
 
     enum GLObjectId {
         None,
@@ -79,12 +84,17 @@ private:
         }
     }
 
+    void setVertexShaderCode(const QStringList &code) { m_vertexShaderCode = code; }
+    void setFragmentShaderCode(const QStringList &code) { m_fragmentShaderCode = code; }
 
     QVector<QVector3D> m_vertices;
     QVector<QVector3D> m_colors;
     QVector<QVector2D> m_textureCoordinates;
 
     QScopedPointer<QImage> m_image;
+
+    QStringList m_vertexShaderCode;
+    QStringList m_fragmentShaderCode;
 };
 
 #endif // GLOBJECTDESCRIPTOR_H

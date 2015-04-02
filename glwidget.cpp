@@ -5,39 +5,6 @@
 
 #include "globjectdescriptor.h"
 
-const char *GLWidget::vertexShaderCode =
-        "#version 330\n"
-
-        "uniform mat4 mvpMatrix;\n"
-
-        "in vec4 vertex;\n"
-        //"in vec4 color;\n"
-        "in vec2 textureCoordinate;\n"
-
-        //"out vec4 varyingColor;\n"
-        "out vec2 varyingTextureCoordinate;\n"
-
-        "void main(void) {\n"
-        //"   varyingColor = color;\n"
-        "   varyingTextureCoordinate = textureCoordinate;\n"
-        "   gl_Position = mvpMatrix * vertex;\n"
-        "}";
-
-const char *GLWidget::fragmentShaderCode =
-        "#version 330\n"
-
-        "uniform sampler2D texture;\n"
-
-        //"in vec4 varyingColor;\n"
-        "in vec2 varyingTextureCoordinate;\n"
-
-        "out vec4 fragColor;\n"
-
-        "void main(void) {\n"
-        //"   fragColor = varyingColor;\n"
-        "   fragColor = texture2D(texture, varyingTextureCoordinate);\n"
-        "}";
-
 GLWidget::GLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
     , m_texture(QOpenGLTexture::Target2D)
@@ -64,10 +31,6 @@ void GLWidget::initializeGL()
     // TODO(pvarga): Add button for the GL_CULL_FACE
     //glEnable(GL_CULL_FACE);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, GLWidget::vertexShaderCode);
-    m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, GLWidget::fragmentShaderCode);
-    m_shaderProgram.link();
 
     m_vertexBuffer.create();
     m_vertexBuffer.bind();
@@ -148,8 +111,10 @@ void GLWidget::paintGL()
 
     m_shaderProgram.release();
 
-    if (m_texture.isBound())
-        m_texture.release();
+    if (m_objectDescriptor->hasTextureImage()) {
+        Q_ASSERT(m_texture.isBound());
+        m_texture.release();\
+    }
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
@@ -230,12 +195,10 @@ void GLWidget::loadObjectDescriptor(GLObjectDescriptor::GLObjectId objectId, con
         return;
     }
 
-    int vertexCount = m_objectDescriptor->getVertexCount();
-
-    m_vertexBuffer.allocate(vertexCount * (3 + 3) * sizeof(GLfloat));
-
+    // Init vertex buffer
     int offset = 0;
-
+    int vertexCount = m_objectDescriptor->getVertexCount();
+    m_vertexBuffer.allocate(vertexCount * (3 + 3) * sizeof(GLfloat));
     m_vertexBuffer.write(offset, m_objectDescriptor->getVertices().constData(), vertexCount * 3 * sizeof(GLfloat));
     offset += vertexCount * 3 * sizeof(GLfloat);
 
@@ -249,9 +212,18 @@ void GLWidget::loadObjectDescriptor(GLObjectDescriptor::GLObjectId objectId, con
         offset += vertexCount * 2 * sizeof(GLfloat);
     }
 
-    if (m_objectDescriptor->hasTextureImage())
-        m_texture.setData(m_objectDescriptor->getTextureImage()->mirrored());
-
     m_vertexBuffer.release();
+
+    // Init texture
+    if (m_objectDescriptor->hasTextureImage()) {
+        m_texture.setData(m_objectDescriptor->getTextureImage()->mirrored());
+    }
+
+
+    // Init shader program
+    m_shaderProgram.removeAllShaders();
+    m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, m_objectDescriptor->getVertexShaderCode());
+    m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, m_objectDescriptor->getFragmentShaderCode());
+    m_shaderProgram.link();
 }
 

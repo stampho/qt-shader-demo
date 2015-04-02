@@ -65,6 +65,28 @@ GLObjectDescriptor *GLObjectDescriptor::createCubeDescriptor()
     cube->setVertices(cubeVertices, vertexCount);
     cube->setColors(cubeColors, vertexCount);
 
+    QStringList vertexShaderCode;
+    vertexShaderCode.append("#version 330");
+    vertexShaderCode.append("uniform mat4 mvpMatrix;");
+    vertexShaderCode.append("in vec4 vertex;");
+    vertexShaderCode.append("in vec4 color;");
+    vertexShaderCode.append("out vec4 varyingColor;");
+    vertexShaderCode.append("void main(void) {");
+    vertexShaderCode.append("   varyingColor = color;");
+    vertexShaderCode.append("   gl_Position = mvpMatrix * vertex;");
+    vertexShaderCode.append("}");
+
+    QStringList fragmentShaderCode;
+    fragmentShaderCode.append("#version 330");
+    fragmentShaderCode.append("in vec4 varyingColor;");
+    fragmentShaderCode.append("out vec4 fragColor;");
+    fragmentShaderCode.append("void main(void) {");
+    fragmentShaderCode.append(" fragColor = varyingColor;");
+    fragmentShaderCode.append("}");
+
+    cube->setVertexShaderCode(vertexShaderCode);
+    cube->setFragmentShaderCode(fragmentShaderCode);
+
     return cube;
 }
 
@@ -97,6 +119,29 @@ GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(const QString &ima
     int vertexCount = sizeof(canvasVertices) / (3 * sizeof(double));
     texture->setVertices(canvasVertices, vertexCount);
     texture->setTextureCoordinates(textureCoodinates, vertexCount);
+
+    QStringList vertexShaderCode;
+    vertexShaderCode.append("#version 330");
+    vertexShaderCode.append("uniform mat4 mvpMatrix;");
+    vertexShaderCode.append("in vec4 vertex;");
+    vertexShaderCode.append("in vec2 textureCoordinate;");
+    vertexShaderCode.append("out vec2 varyingTextureCoordinate;");
+    vertexShaderCode.append("void main(void) {;");
+    vertexShaderCode.append("   varyingTextureCoordinate = textureCoordinate;");
+    vertexShaderCode.append("   gl_Position = mvpMatrix * vertex;");
+    vertexShaderCode.append("}");
+
+    QStringList fragmentShaderCode;
+    fragmentShaderCode.append("#version 330");
+    fragmentShaderCode.append("uniform sampler2D texture;");
+    fragmentShaderCode.append("in vec2 varyingTextureCoordinate;");
+    fragmentShaderCode.append("out vec4 fragColor;");
+    fragmentShaderCode.append("void main(void) {");
+    fragmentShaderCode.append(" fragColor = texture2D(texture, varyingTextureCoordinate);");
+    fragmentShaderCode.append("}");
+
+    texture->setVertexShaderCode(vertexShaderCode);
+    texture->setFragmentShaderCode(fragmentShaderCode);
 
     return texture;
 }
