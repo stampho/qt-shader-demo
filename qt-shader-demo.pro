@@ -35,4 +35,5 @@ RCC_DIR = $${DESTDIR}/.rcc
 UI_DIR = $${DESTDIR}/.ui
 
 RESOURCES += \
-    images.qrc
+    images.qrc \
+    shaders.qrc
