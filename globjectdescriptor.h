@@ -1,18 +1,21 @@
 #ifndef GLOBJECTDESCRIPTOR_H
 #define GLOBJECTDESCRIPTOR_H
 
+#include <QScopedPointer>
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector>
+
+class QImage;
 
 class GLObjectDescriptor
 {
 public:
     static GLObjectDescriptor *createCubeDescriptor();
-    static GLObjectDescriptor *createTextureDescriptor(const QString &imagePath);
+    static GLObjectDescriptor *createImageDescriptor(const QString &imagePath);
 
-    GLObjectDescriptor() {}
-    ~GLObjectDescriptor() {}
+    GLObjectDescriptor(const QString &imagePath = QString());
+    ~GLObjectDescriptor();
 
     QVector<QVector3D> getVertices() const { return m_vertices; }
 
@@ -22,9 +25,14 @@ public:
     QVector<QVector2D> getTextureCoordinates() const { return m_textureCoordinates; }
     bool hasTexture() const { return !m_textureCoordinates.isEmpty(); }
 
+    QImage *getTextureImage() { return m_image.data(); }
+    bool hasTextureImage() { return !m_image.isNull(); }
+    QSize getTextureImageSize();
+
     int getVertexCount() const { return m_vertices.count(); }
 
     enum GLObjectId {
+        None,
         CubeObject,
         ImageObject
     };
@@ -61,9 +69,9 @@ private:
     template<typename T>
     void setTextureCoordinates(T coords[][2], int count)
     {
-        m_colors.clear();
+        m_textureCoordinates.clear();
 
-        T t, s;
+        T s, t;
         for (int i = 0; i < count; ++i) {
             s = coords[i][0];
             t = coords[i][1];
@@ -75,6 +83,8 @@ private:
     QVector<QVector3D> m_vertices;
     QVector<QVector3D> m_colors;
     QVector<QVector2D> m_textureCoordinates;
+
+    QScopedPointer<QImage> m_image;
 };
 
 #endif // GLOBJECTDESCRIPTOR_H

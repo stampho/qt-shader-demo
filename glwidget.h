@@ -1,13 +1,15 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
+#include "globjectdescriptor.h"
+
 #include <QMatrix4x4>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLTexture>
 #include <QOpenGLWidget>
 
-class GLObjectDescriptor;
 class QWheelEvent;
 class QMouseEvent;
 
@@ -26,6 +28,7 @@ public:
     ~GLWidget();
 
     void rotate(int angle, Axis axis);
+    void loadObjectDescriptor(GLObjectDescriptor::GLObjectId objectId, const QString &textureImagePath = QString());
 
 protected:
     void initializeGL();
@@ -44,6 +47,7 @@ private:
     QOpenGLShaderProgram m_shaderProgram;
 
     QOpenGLBuffer m_vertexBuffer;
+    QOpenGLTexture m_texture;
     QScopedPointer<GLObjectDescriptor> m_objectDescriptor;
 
     double m_distance;
