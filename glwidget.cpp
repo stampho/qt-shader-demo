@@ -33,11 +33,6 @@ void GLWidget::initializeGL()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     m_vertexBuffer.create();
-    m_vertexBuffer.bind();
-
-    // Paint nothing per default
-    //loadObjectDescriptor(GLObjectDescriptor::None);
-    loadObjectDescriptor(GLObjectDescriptor::ImageObject, ":/images/qt-logo.png");
 }
 
 void GLWidget::resizeGL(int width, int height)
@@ -113,7 +108,7 @@ void GLWidget::paintGL()
 
     if (m_objectDescriptor->hasTextureImage()) {
         Q_ASSERT(m_texture.isBound());
-        m_texture.release();\
+        m_texture.release();
     }
 }
 
@@ -175,30 +170,34 @@ void GLWidget::rotate(int angle, Axis axis)
     }
 }
 
-void GLWidget::loadObjectDescriptor(GLObjectDescriptor::GLObjectId objectId, const QString &textureImagePath)
+void GLWidget::updateObjectDescriptor(GLObjectDescriptor *objectDescriptor)
 {
-    switch(objectId) {
-    case GLObjectDescriptor::CubeObject:
-        m_objectDescriptor.reset(GLObjectDescriptor::createCubeDescriptor());
-        break;
-    case GLObjectDescriptor::ImageObject:
-        m_objectDescriptor.reset(GLObjectDescriptor::createImageDescriptor(textureImagePath));
-        break;
-    case GLObjectDescriptor::None:
-    default:
-        m_objectDescriptor.reset(0);
+    m_objectDescriptor.reset(objectDescriptor);
+    if (!objectDescriptor) {
+        update();
         return;
     }
 
-    if (m_objectDescriptor.isNull()) {
-        qWarning("An error has occured while loading object descriptor");
-        return;
-    }
+    updateVertexBuffer();
+    updateTexture();
+    updateShaderProgram();
 
-    // Init vertex buffer
+    update();
+}
+
+void GLWidget::updateVertexBuffer()
+{
     int offset = 0;
     int vertexCount = m_objectDescriptor->getVertexCount();
-    m_vertexBuffer.allocate(vertexCount * (3 + 3) * sizeof(GLfloat));
+
+    m_vertexBuffer.bind();
+    int elementCount = 3; // vertex
+    if (m_objectDescriptor->hasColors())
+        elementCount += 3;
+    if (m_objectDescriptor->hasTexture())
+        elementCount += 2;
+    m_vertexBuffer.allocate(vertexCount * elementCount * sizeof(GLfloat));
+
     m_vertexBuffer.write(offset, m_objectDescriptor->getVertices().constData(), vertexCount * 3 * sizeof(GLfloat));
     offset += vertexCount * 3 * sizeof(GLfloat);
 
@@ -213,17 +212,22 @@ void GLWidget::loadObjectDescriptor(GLObjectDescriptor::GLObjectId objectId, con
     }
 
     m_vertexBuffer.release();
+}
 
-    // Init texture
-    if (m_objectDescriptor->hasTextureImage()) {
-        m_texture.setData(m_objectDescriptor->getTextureImage()->mirrored());
-    }
+void GLWidget::updateTexture()
+{
+    m_texture.destroy();
 
+    if (!m_objectDescriptor->hasTextureImage())
+        return;
 
-    // Init shader program
+    m_texture.setData(m_objectDescriptor->getTextureImage()->mirrored());
+}
+
+void GLWidget::updateShaderProgram()
+{
     m_shaderProgram.removeAllShaders();
     m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, m_objectDescriptor->getVertexShaderCode());
     m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, m_objectDescriptor->getFragmentShaderCode());
     m_shaderProgram.link();
 }
-

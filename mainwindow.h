@@ -3,8 +3,9 @@
 
 #include <QMainWindow>
 
-class QTimer;
+class QListWidgetItem;
 class QSlider;
+class QTimer;
 
 namespace Ui {
 class MainWindow;
@@ -23,8 +24,12 @@ private slots:
     void onRotateSliderMoved();
     void rotateObject();
     void setAnimationSpeed(int speed);
+    void onObjectSelected(QListWidgetItem *item);
 
 private:
+    void initObjectListWidget();
+    void createConnections();
+
     Ui::MainWindow *m_ui;
 
     QTimer *m_rotateSliderTimer;

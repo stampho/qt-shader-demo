@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "glwidget.h"
+#include "globjectdescriptor.h"
 
 #include <QTimer>
 
@@ -14,24 +15,14 @@ MainWindow::MainWindow(QWidget *parent)
 {
     m_ui->setupUi(this);
 
-    m_ui->objectListWidget->addItem(QString("Object 1"));
-    m_ui->objectListWidget->addItem(QString("Object 2"));
-    m_ui->objectListWidget->addItem(QString("Object 3"));
-
-    connect(m_ui->yRotateSlider, SIGNAL(sliderReleased()), this, SLOT(onRotateSliderReleased()));
-    connect(m_ui->xRotateSlider, SIGNAL(sliderReleased()), this, SLOT(onRotateSliderReleased()));
-
-    connect(m_ui->yRotateSlider, SIGNAL(sliderMoved(int)), this, SLOT(onRotateSliderMoved()));
-    connect(m_ui->xRotateSlider, SIGNAL(sliderMoved(int)), this, SLOT(onRotateSliderMoved()));
-
-    connect(m_rotateSliderTimer, SIGNAL(timeout()), this, SLOT(rotateObject()));
-    connect(m_rotateAnimTimer, SIGNAL(timeout()), this, SLOT(rotateObject()));
-
-    connect(m_ui->objectAnimationSlider, SIGNAL(valueChanged(int)), this, SLOT(setAnimationSpeed(int)));
+    initObjectListWidget();
+    createConnections();
 }
 
 MainWindow::~MainWindow()
 {
+    delete m_rotateAnimTimer;
+    delete m_rotateSliderTimer;
     delete m_ui;
 }
 
@@ -74,4 +65,49 @@ void MainWindow::setAnimationSpeed(int speed)
 
     int max = m_ui->objectAnimationSlider->maximum();
     m_rotateAnimTimer->start(max - speed);
+}
+
+void MainWindow::onObjectSelected(QListWidgetItem *item)
+{
+    GLObjectDescriptor *objectDescriptor;
+
+    switch(item->data(Qt::UserRole).toInt()) {
+    case GLObjectDescriptor::CubeObject:
+        objectDescriptor = GLObjectDescriptor::createCubeDescriptor();
+        break;
+    case GLObjectDescriptor::ImageObject:
+        objectDescriptor = GLObjectDescriptor::createImageDescriptor(":/images/qt-logo.png");
+        break;
+    case GLObjectDescriptor::None:
+    default:
+        objectDescriptor = 0;
+        break;
+    }
+
+    m_ui->openGLWidget->updateObjectDescriptor(objectDescriptor);
+}
+
+void MainWindow::initObjectListWidget()
+{
+    QListWidgetItem *cubeItem = new QListWidgetItem("Cube", m_ui->objectListWidget);
+    cubeItem->setData(Qt::UserRole, GLObjectDescriptor::CubeObject);
+
+    QListWidgetItem *imageItem = new QListWidgetItem("Image", m_ui->objectListWidget);
+    imageItem->setData(Qt::UserRole, GLObjectDescriptor::ImageObject);
+}
+
+void MainWindow::createConnections()
+{
+    connect(m_ui->yRotateSlider, SIGNAL(sliderReleased()), this, SLOT(onRotateSliderReleased()));
+    connect(m_ui->xRotateSlider, SIGNAL(sliderReleased()), this, SLOT(onRotateSliderReleased()));
+
+    connect(m_ui->yRotateSlider, SIGNAL(sliderMoved(int)), this, SLOT(onRotateSliderMoved()));
+    connect(m_ui->xRotateSlider, SIGNAL(sliderMoved(int)), this, SLOT(onRotateSliderMoved()));
+
+    connect(m_rotateSliderTimer, SIGNAL(timeout()), this, SLOT(rotateObject()));
+    connect(m_rotateAnimTimer, SIGNAL(timeout()), this, SLOT(rotateObject()));
+
+    connect(m_ui->objectAnimationSlider, SIGNAL(valueChanged(int)), this, SLOT(setAnimationSpeed(int)));
+
+    connect(m_ui->objectListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onObjectSelected(QListWidgetItem*)));
 }
