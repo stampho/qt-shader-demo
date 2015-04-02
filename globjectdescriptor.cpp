@@ -78,6 +78,7 @@ GLObjectDescriptor *GLObjectDescriptor::createCubeDescriptor()
 
     QStringList fragmentShaderCode;
     fragmentShaderCode.append("#version 330");
+    fragmentShaderCode.append("uniform int animProgress;");
     fragmentShaderCode.append("in vec4 varyingColor;");
     fragmentShaderCode.append("out vec4 fragColor;");
     fragmentShaderCode.append("void main(void) {");
@@ -134,10 +135,32 @@ GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(const QString &ima
     QStringList fragmentShaderCode;
     fragmentShaderCode.append("#version 330");
     fragmentShaderCode.append("uniform sampler2D texture;");
+    fragmentShaderCode.append("uniform int animProgress;");
     fragmentShaderCode.append("in vec2 varyingTextureCoordinate;");
     fragmentShaderCode.append("out vec4 fragColor;");
+
+    fragmentShaderCode.append("float lightness(vec4 color) {");
+    fragmentShaderCode.append(" float cmax = max(color[0], max(color[1], color[2]));");
+    fragmentShaderCode.append(" float cmin = min(color[0], min(color[1], color[2]));");
+    fragmentShaderCode.append(" return (cmax + cmin) / 2;");
+    fragmentShaderCode.append("}");
+
+    fragmentShaderCode.append("vec4 gray(vec4 color) {");
+    fragmentShaderCode.append(" float l = lightness(color);");
+    fragmentShaderCode.append(" return vec4(l, l, l, 1.0);");
+    fragmentShaderCode.append("}");
+
+    fragmentShaderCode.append("vec4 invert(vec4 color) {");
+    fragmentShaderCode.append(" return vec4(1.0 - color[0], 1.0 - color[1], 1.0 - color[2], color[3]);");
+    fragmentShaderCode.append("}");
+
     fragmentShaderCode.append("void main(void) {");
     fragmentShaderCode.append(" fragColor = texture2D(texture, varyingTextureCoordinate);");
+    fragmentShaderCode.append(" float progress = clamp(animProgress / 100.0, 0.0, 1.0);");
+    fragmentShaderCode.append(" if (varyingTextureCoordinate[1] > (1.0 - progress)) {");
+    fragmentShaderCode.append("     fragColor = gray(fragColor);");
+    fragmentShaderCode.append("     fragColor = invert(fragColor);");
+    fragmentShaderCode.append(" }");
     fragmentShaderCode.append("}");
 
     texture->setVertexShaderCode(vertexShaderCode);

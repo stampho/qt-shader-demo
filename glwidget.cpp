@@ -1,6 +1,7 @@
 #include "glwidget.h"
 
 #include <QMouseEvent>
+#include <QTimer>
 #include <QWheelEvent>
 
 #include "globjectdescriptor.h"
@@ -9,12 +10,15 @@ GLWidget::GLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
     , m_texture(QOpenGLTexture::Target2D)
     , m_objectDescriptor(0)
+    , m_shaderAnimTimer(new QTimer(this))
 {
     m_distance = 5.0;
     m_yRotateAngle = 25;
     m_xRotateAngle = -25;
     m_xCameraPosition = 0.0;
     m_yCameraPosition = 0.0;
+
+    connect(m_shaderAnimTimer, SIGNAL(timeout()), this, SLOT(shaderAnimTimerTimeout()));
 }
 
 GLWidget::~GLWidget()
@@ -76,6 +80,7 @@ void GLWidget::paintGL()
         m_texture.bind();
         m_shaderProgram.setUniformValue("texture", 0);
     }
+    m_shaderProgram.setUniformValue("animProgress", m_shaderAnimProgress);
 
     int offset = 0;
     int vertexCount = m_objectDescriptor->getVertexCount();
@@ -185,6 +190,12 @@ void GLWidget::updateObjectDescriptor(GLObjectDescriptor *objectDescriptor)
     update();
 }
 
+void GLWidget::resetShaderAnimTimer(int msec)
+{
+    m_shaderAnimProgress = 0;
+    m_shaderAnimTimer->start(msec);
+}
+
 void GLWidget::updateVertexBuffer()
 {
     int offset = 0;
@@ -230,4 +241,14 @@ void GLWidget::updateShaderProgram()
     m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, m_objectDescriptor->getVertexShaderCode());
     m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, m_objectDescriptor->getFragmentShaderCode());
     m_shaderProgram.link();
+}
+
+void GLWidget::shaderAnimTimerTimeout()
+{
+    m_shaderAnimProgress += 5;
+
+    update();
+
+    if (m_shaderAnimProgress >= 100)
+        m_shaderAnimTimer->stop();
 }

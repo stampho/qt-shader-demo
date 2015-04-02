@@ -21,8 +21,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete m_rotateAnimTimer;
-    delete m_rotateSliderTimer;
     delete m_ui;
 }
 
@@ -85,6 +83,7 @@ void MainWindow::onObjectSelected(QListWidgetItem *item)
     }
 
     m_ui->openGLWidget->updateObjectDescriptor(objectDescriptor);
+    m_ui->openGLWidget->resetShaderAnimTimer(50);
 }
 
 void MainWindow::initObjectListWidget()

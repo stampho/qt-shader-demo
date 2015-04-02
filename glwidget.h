@@ -10,8 +10,9 @@
 #include <QScopedPointer>
 
 class GLObjectDescriptor;
-class QWheelEvent;
 class QMouseEvent;
+class QTimer;
+class QWheelEvent;
 
 enum Axis {
     X_AXIS = 0b100,
@@ -29,6 +30,7 @@ public:
 
     void rotate(int angle, Axis axis);
     void updateObjectDescriptor(GLObjectDescriptor *objectDescriptor);
+    void resetShaderAnimTimer(int msec);
 
 protected:
     void initializeGL();
@@ -58,6 +60,12 @@ private:
     double m_yCameraPosition;
 
     QPoint m_lastMousePosition;
+
+    QTimer *m_shaderAnimTimer;
+    int m_shaderAnimProgress;
+
+private Q_SLOTS:
+    void shaderAnimTimerTimeout();
 };
 
 #endif // GLWIDGET_H
