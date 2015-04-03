@@ -66,23 +66,22 @@ GLObjectDescriptor *GLObjectDescriptor::createCubeDescriptor()
     cube->setColors(cubeColors, vertexCount);
 
     QStringList vertexShaderCode;
-    vertexShaderCode.append("#version 330");
+    vertexShaderCode.append("#version 120");
     vertexShaderCode.append("uniform mat4 mvpMatrix;");
-    vertexShaderCode.append("in vec4 vertex;");
-    vertexShaderCode.append("in vec4 color;");
-    vertexShaderCode.append("out vec4 varyingColor;");
+    vertexShaderCode.append("attribute vec4 vertex;");
+    vertexShaderCode.append("attribute vec4 color;");
+    vertexShaderCode.append("varying vec4 varyingColor;");
     vertexShaderCode.append("void main(void) {");
     vertexShaderCode.append("   varyingColor = color;");
     vertexShaderCode.append("   gl_Position = mvpMatrix * vertex;");
     vertexShaderCode.append("}");
 
     QStringList fragmentShaderCode;
-    fragmentShaderCode.append("#version 330");
+    fragmentShaderCode.append("#version 120");
     fragmentShaderCode.append("uniform int animProgress;");
-    fragmentShaderCode.append("in vec4 varyingColor;");
-    fragmentShaderCode.append("out vec4 fragColor;");
+    fragmentShaderCode.append("varying vec4 varyingColor;");
     fragmentShaderCode.append("void main(void) {");
-    fragmentShaderCode.append(" fragColor = varyingColor;");
+    fragmentShaderCode.append(" gl_FragColor = varyingColor;");
     fragmentShaderCode.append("}");
 
     cube->setVertexShaderCode(vertexShaderCode);
@@ -122,22 +121,21 @@ GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(const QString &ima
     texture->setTextureCoordinates(textureCoodinates, vertexCount);
 
     QStringList vertexShaderCode;
-    vertexShaderCode.append("#version 330");
+    vertexShaderCode.append("#version 120");
     vertexShaderCode.append("uniform mat4 mvpMatrix;");
-    vertexShaderCode.append("in vec4 vertex;");
-    vertexShaderCode.append("in vec2 textureCoordinate;");
-    vertexShaderCode.append("out vec2 varyingTextureCoordinate;");
+    vertexShaderCode.append("attribute vec4 vertex;");
+    vertexShaderCode.append("attribute vec2 textureCoordinate;");
+    vertexShaderCode.append("varying vec2 varyingTextureCoordinate;");
     vertexShaderCode.append("void main(void) {;");
     vertexShaderCode.append("   varyingTextureCoordinate = textureCoordinate;");
     vertexShaderCode.append("   gl_Position = mvpMatrix * vertex;");
     vertexShaderCode.append("}");
 
     QStringList fragmentShaderCode;
-    fragmentShaderCode.append("#version 330");
+    fragmentShaderCode.append("#version 120");
     fragmentShaderCode.append("uniform sampler2D texture;");
     fragmentShaderCode.append("uniform int animProgress;");
-    fragmentShaderCode.append("in vec2 varyingTextureCoordinate;");
-    fragmentShaderCode.append("out vec4 fragColor;");
+    fragmentShaderCode.append("varying vec2 varyingTextureCoordinate;");
 
     fragmentShaderCode.append("float lightness(vec4 color) {");
     fragmentShaderCode.append(" float cmax = max(color[0], max(color[1], color[2]));");
@@ -155,11 +153,11 @@ GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(const QString &ima
     fragmentShaderCode.append("}");
 
     fragmentShaderCode.append("void main(void) {");
-    fragmentShaderCode.append(" fragColor = texture2D(texture, varyingTextureCoordinate);");
+    fragmentShaderCode.append(" gl_FragColor = texture2D(texture, varyingTextureCoordinate);");
     fragmentShaderCode.append(" float progress = clamp(animProgress / 100.0, 0.0, 1.0);");
     fragmentShaderCode.append(" if (varyingTextureCoordinate[1] > (1.0 - progress)) {");
-    fragmentShaderCode.append("     fragColor = gray(fragColor);");
-    fragmentShaderCode.append("     fragColor = invert(fragColor);");
+    fragmentShaderCode.append("     gl_FragColor = gray(gl_FragColor);");
+    fragmentShaderCode.append("     gl_FragColor = invert(gl_FragColor);");
     fragmentShaderCode.append(" }");
     fragmentShaderCode.append("}");
 
