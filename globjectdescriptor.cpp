@@ -5,6 +5,8 @@
 #include <QImage>
 #include <QSize>
 
+#include "shaderbuilder.h"
+
 GLObjectDescriptor *GLObjectDescriptor::createCubeDescriptor()
 {
     GLObjectDescriptor *cube = new GLObjectDescriptor();
@@ -65,40 +67,43 @@ GLObjectDescriptor *GLObjectDescriptor::createCubeDescriptor()
     cube->setVertices(cubeVertices, vertexCount);
     cube->setColors(cubeColors, vertexCount);
 
-    QStringList vertexShaderCode;
-    vertexShaderCode.append("#version 120");
-    vertexShaderCode.append("uniform mat4 mvpMatrix;");
-    vertexShaderCode.append("attribute vec4 vertex;");
-    vertexShaderCode.append("attribute vec4 color;");
-    vertexShaderCode.append("varying vec4 varyingColor;");
-    vertexShaderCode.append("void main(void) {");
-    vertexShaderCode.append("   varyingColor = color;");
-    vertexShaderCode.append("   gl_Position = mvpMatrix * vertex;");
-    vertexShaderCode.append("}");
+    ShaderBuilder shaderBuilder("120");
+    QStringList vertexVariables;
+    vertexVariables.append("uniform mat4 mvpMatrix;");
+    vertexVariables.append("attribute vec4 vertex;");
+    vertexVariables.append("attribute vec4 color;");
+    vertexVariables.append("varying vec4 varyingColor;");
+    shaderBuilder.setVariables(QOpenGLShader::Vertex, vertexVariables);
 
-    QStringList fragmentShaderCode;
-    fragmentShaderCode.append("#version 120");
-    fragmentShaderCode.append("uniform int animProgress;");
-    fragmentShaderCode.append("varying vec4 varyingColor;");
-    fragmentShaderCode.append("void main(void) {");
-    fragmentShaderCode.append(" gl_FragColor = varyingColor;");
-    fragmentShaderCode.append("}");
+    QStringList vertexMain;
+    vertexMain.append("varyingColor = color;");
+    vertexMain.append("gl_Position = mvpMatrix * vertex;");
+    shaderBuilder.setMainBody(QOpenGLShader::Vertex, vertexMain);
 
-    cube->setVertexShaderCode(vertexShaderCode);
-    cube->setFragmentShaderCode(fragmentShaderCode);
+    QStringList fragmentVariables;
+    fragmentVariables.append("uniform int animProgress;");
+    fragmentVariables.append("varying vec4 varyingColor;");
+    shaderBuilder.setVariables(QOpenGLShader::Fragment, fragmentVariables);
+
+    QStringList fragmentMain;
+    fragmentMain.append("gl_FragColor = varyingColor;");
+    shaderBuilder.setMainBody(QOpenGLShader::Fragment, fragmentMain);
+
+    cube->setVertexShaderCode(shaderBuilder.getShaderCode(QOpenGLShader::Vertex));
+    cube->setFragmentShaderCode(shaderBuilder.getShaderCode(QOpenGLShader::Fragment));
 
     return cube;
 }
 
 GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(const QString &imagePath)
 {
-    GLObjectDescriptor *texture = new GLObjectDescriptor(imagePath);
-    if (!texture->hasTextureImage()) {
+    GLObjectDescriptor *image = new GLObjectDescriptor(imagePath);
+    if (!image->hasTextureImage()) {
         qWarning() << "Unable to load image: " << imagePath;
         return 0;
     }
 
-    QSize imageSize = texture->getTextureImageSize();
+    QSize imageSize = image->getTextureImageSize();
     if (imageSize.width() == 0) {
         qWarning() << "Invalid image size: " << imageSize;
         return 0;
@@ -117,54 +122,41 @@ GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(const QString &ima
     };
 
     int vertexCount = sizeof(canvasVertices) / (3 * sizeof(double));
-    texture->setVertices(canvasVertices, vertexCount);
-    texture->setTextureCoordinates(textureCoodinates, vertexCount);
+    image->setVertices(canvasVertices, vertexCount);
+    image->setTextureCoordinates(textureCoodinates, vertexCount);
 
-    QStringList vertexShaderCode;
-    vertexShaderCode.append("#version 120");
-    vertexShaderCode.append("uniform mat4 mvpMatrix;");
-    vertexShaderCode.append("attribute vec4 vertex;");
-    vertexShaderCode.append("attribute vec2 textureCoordinate;");
-    vertexShaderCode.append("varying vec2 varyingTextureCoordinate;");
-    vertexShaderCode.append("void main(void) {;");
-    vertexShaderCode.append("   varyingTextureCoordinate = textureCoordinate;");
-    vertexShaderCode.append("   gl_Position = mvpMatrix * vertex;");
-    vertexShaderCode.append("}");
+    ShaderBuilder shaderBuilder("120");
+    QStringList vertexVariables;
+    vertexVariables.append("uniform mat4 mvpMatrix;");
+    vertexVariables.append("attribute vec4 vertex;");
+    vertexVariables.append("attribute vec2 textureCoordinate;");
+    vertexVariables.append("varying vec2 varyingTextureCoordinate;");
+    shaderBuilder.setVariables(QOpenGLShader::Vertex, vertexVariables);
 
-    QStringList fragmentShaderCode;
-    fragmentShaderCode.append("#version 120");
-    fragmentShaderCode.append("uniform sampler2D texture;");
-    fragmentShaderCode.append("uniform int animProgress;");
-    fragmentShaderCode.append("varying vec2 varyingTextureCoordinate;");
+    QStringList vertexMain;
+    vertexMain.append("varyingTextureCoordinate = textureCoordinate;");
+    vertexMain.append("gl_Position = mvpMatrix * vertex;");
+    shaderBuilder.setMainBody(QOpenGLShader::Vertex, vertexMain);
 
-    fragmentShaderCode.append("float lightness(vec4 color) {");
-    fragmentShaderCode.append(" float cmax = max(color[0], max(color[1], color[2]));");
-    fragmentShaderCode.append(" float cmin = min(color[0], min(color[1], color[2]));");
-    fragmentShaderCode.append(" return (cmax + cmin) / 2;");
-    fragmentShaderCode.append("}");
+    QStringList fragmentVariables;
+    fragmentVariables.append("uniform int animProgress;");
+    fragmentVariables.append("uniform sampler2D texture;");
+    fragmentVariables.append("varying vec2 varyingTextureCoordinate;");
+    shaderBuilder.setVariables(QOpenGLShader::Fragment, fragmentVariables);
 
-    fragmentShaderCode.append("vec4 gray(vec4 color) {");
-    fragmentShaderCode.append(" float l = lightness(color);");
-    fragmentShaderCode.append(" return vec4(l, l, l, 1.0);");
-    fragmentShaderCode.append("}");
+    QStringList fragmentMain;
+    fragmentMain.append("gl_FragColor = texture2D(texture, varyingTextureCoordinate);");
+    fragmentMain.append("float progress = clamp(animProgress / 100.0, 0.0, 1.0);");
+    fragmentMain.append("if (varyingTextureCoordinate[1] > (1.0 - progress)) {");
+    fragmentMain.append("    gl_FragColor = gray(gl_FragColor);");
+    fragmentMain.append("    gl_FragColor = invert(gl_FragColor);");
+    fragmentMain.append("}");
+    shaderBuilder.setMainBody(QOpenGLShader::Fragment, fragmentMain);
 
-    fragmentShaderCode.append("vec4 invert(vec4 color) {");
-    fragmentShaderCode.append(" return vec4(1.0 - color[0], 1.0 - color[1], 1.0 - color[2], color[3]);");
-    fragmentShaderCode.append("}");
+    image->setVertexShaderCode(shaderBuilder.getShaderCode(QOpenGLShader::Vertex));
+    image->setFragmentShaderCode(shaderBuilder.getShaderCode(QOpenGLShader::Fragment));
 
-    fragmentShaderCode.append("void main(void) {");
-    fragmentShaderCode.append(" gl_FragColor = texture2D(texture, varyingTextureCoordinate);");
-    fragmentShaderCode.append(" float progress = clamp(animProgress / 100.0, 0.0, 1.0);");
-    fragmentShaderCode.append(" if (varyingTextureCoordinate[1] > (1.0 - progress)) {");
-    fragmentShaderCode.append("     gl_FragColor = gray(gl_FragColor);");
-    fragmentShaderCode.append("     gl_FragColor = invert(gl_FragColor);");
-    fragmentShaderCode.append(" }");
-    fragmentShaderCode.append("}");
-
-    texture->setVertexShaderCode(vertexShaderCode);
-    texture->setFragmentShaderCode(fragmentShaderCode);
-
-    return texture;
+    return image;
 }
 
 GLObjectDescriptor::GLObjectDescriptor(const QString &imagePath)

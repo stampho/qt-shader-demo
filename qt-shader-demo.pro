@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     glwidget.cpp \
-    globjectdescriptor.cpp
+    globjectdescriptor.cpp \
+    shaderbuilder.cpp
 
 HEADERS  += mainwindow.h \
     glwidget.h \
-    globjectdescriptor.h
+    globjectdescriptor.h \
+    shaderbuilder.h
 
 FORMS    += mainwindow.ui
 
