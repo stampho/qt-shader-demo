@@ -23,9 +23,6 @@ GLWidget::GLWidget(QWidget *parent)
 
 GLWidget::~GLWidget()
 {
-    makeCurrent();
-    m_texture.destroy();
-    doneCurrent();
 }
 
 void GLWidget::initializeGL()
