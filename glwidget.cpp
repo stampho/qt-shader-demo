@@ -155,16 +155,16 @@ void GLWidget::wheelEvent(QWheelEvent *event)
     event->accept();
 }
 
-void GLWidget::rotate(int angle, Axis axis)
+void GLWidget::rotate(int angle, Axis::Axis axis)
 {
     switch(axis){
-    case Y_AXIS:
+    case Axis::Y:
         m_yRotateAngle += angle;
         while (m_yRotateAngle < 0)  m_yRotateAngle += 360;
         while (m_yRotateAngle >= 360) m_yRotateAngle -= 360;
         update();
         break;
-    case X_AXIS:
+    case Axis::X:
         m_xRotateAngle += angle;
         while (m_xRotateAngle < 0)  m_xRotateAngle += 360;
         while (m_xRotateAngle >= 360) m_xRotateAngle -= 360;

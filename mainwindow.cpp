@@ -43,13 +43,13 @@ void MainWindow::rotateObject()
     const int timerId = dynamic_cast<QTimer *>(sender())->timerId();
 
     if (timerId == m_rotateSliderTimer->timerId()) {
-        Axis axis = (m_grabbedRotateSlider->orientation() == Qt::Vertical) ? X_AXIS : Y_AXIS;
+        Axis::Axis axis = (m_grabbedRotateSlider->orientation() == Qt::Vertical) ? Axis::X : Axis::Y;
         m_ui->openGLWidget->rotate(m_grabbedRotateSlider->sliderPosition(), axis);
         return;
     }
 
     if (timerId == m_rotateAnimTimer->timerId()) {
-        m_ui->openGLWidget->rotate(2, Y_AXIS);
+        m_ui->openGLWidget->rotate(2, Axis::Y);
         return;
     }
 }

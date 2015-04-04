@@ -14,11 +14,13 @@ class QMouseEvent;
 class QTimer;
 class QWheelEvent;
 
-enum Axis {
-    X_AXIS = 0b100,
-    Y_AXIS = 0b010,
-    Z_AXIS = 0b001
-};
+namespace Axis {
+    enum Axis {
+        X = 0b100,
+        Y = 0b010,
+        Z = 0b001
+    };
+}
 
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -28,7 +30,7 @@ public:
     GLWidget(QWidget *parent = 0);
     ~GLWidget();
 
-    void rotate(int angle, Axis axis);
+    void rotate(int angle, Axis::Axis axis);
     void updateObjectDescriptor(GLObjectDescriptor *objectDescriptor);
     void resetShaderAnimTimer(int msec);
 
