@@ -104,5 +104,67 @@ vec4 sobel(sampler2D tex,
         result[i] = length(vec2(dx[i], dy[i]));
     }
 
-    return vec4(result.r, result.g, result.b, 1.0);
+    return vec4(result.rgb, 1.0);
+}
+
+float gradientStrength(vec4 gradient[2])
+{
+   float dx = lightness(gradient[0]);
+   float dy = lightness(gradient[1]);
+
+   return length(vec2(dx, dy));
+}
+
+vec2 gradientDirection(vec4 gradient[2]) {
+    const float atan0   =  0.414213;
+    const float atan45  =  2.414213;
+    const float atan90  = -2.414213;
+    const float atan135 = -0.414213;
+
+    float dx = lightness(gradient[0]);
+    float dy = lightness(gradient[1]);
+
+    float x = atan(dy, dx);
+
+    if (x < atan0 && x > atan135)
+        return vec2(1.0, 0.0);
+
+    if (x < atan90 && x > atan45)
+        return vec2(0.0, 1.0);
+
+    if (x > atan135 && x < atan90)
+        return vec2(-1.0, 1.0);
+
+    return vec2(1.0, 1.0);
+}
+
+vec4 canny(sampler2D tex,
+           vec2 textureSize,
+           vec2 coords,
+           vec4 gaussKernel[81],
+           int kernelRadius)
+{
+    vec4 gradient[2] = filteredGradient(tex, textureSize, coords, gaussKernel, kernelRadius);
+    float strength = gradientStrength(gradient);
+    const float threshold = 0.2;
+
+    if (strength < threshold)
+        return vec4(0.0, 0.0, 0.0, 1.0);
+
+    vec2 direction = gradientDirection(gradient);
+    float dxtex = 1.0 / textureSize[0];
+    float dytex = 1.0 / textureSize[1];
+
+    vec2 offset = vec2(float(direction[0]) * dxtex, float(direction[1]) * dytex);
+
+    vec4 forwardGradient[2] = filteredGradient(tex, textureSize, coords + offset, gaussKernel, kernelRadius);
+    vec4 backwardGradient[2] = filteredGradient(tex, textureSize, coords - offset, gaussKernel, kernelRadius);
+
+    float forwardStrength = gradientStrength(forwardGradient);
+    float backwardStrength = gradientStrength(backwardGradient);
+
+    if (forwardStrength > strength || backwardStrength > strength)
+        return vec4(0.0, 0.0, 0.0, 1.0);
+
+    return vec4(1.0);
 }

@@ -151,11 +151,13 @@ GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(const QString &ima
     QStringList fragmentMain;
     //fragmentMain.append("gl_FragColor = texture2D(texture, varyingTextureCoordinate);");
     //fragmentMain.append("gl_FragColor = gaussBlur(texture, textureSize, varyingTextureCoordinate, gaussKernel, kernelRadius);");
+    //fragmentMain.append("gl_FragColor = canny(texture, textureSize, varyingTextureCoordinate, gaussKernel, kernelRadius);");
     fragmentMain.append("float progress = clamp(animProgress / 100.0, 0.0, 1.0);");
     fragmentMain.append("if (varyingTextureCoordinate[1] > (1.0 - progress)) {");
-    fragmentMain.append("    gl_FragColor = sobel(texture, textureSize, varyingTextureCoordinate, gaussKernel, kernelRadius);");
-    fragmentMain.append("    gl_FragColor = gray(gl_FragColor);");
-    fragmentMain.append("    gl_FragColor = invert(gl_FragColor);");
+    fragmentMain.append("    gl_FragColor = canny(texture, textureSize, varyingTextureCoordinate, gaussKernel, kernelRadius);");
+    //fragmentMain.append("    gl_FragColor = sobel(texture, textureSize, varyingTextureCoordinate, gaussKernel, kernelRadius);");
+    //fragmentMain.append("    gl_FragColor = gray(gl_FragColor);");
+    //fragmentMain.append("    gl_FragColor = invert(gl_FragColor);");
     fragmentMain.append("} else {");
     fragmentMain.append("   gl_FragColor = texture2D(texture, varyingTextureCoordinate);");
     fragmentMain.append("}");
