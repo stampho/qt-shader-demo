@@ -48,6 +48,8 @@ private:
     void updateTexture();
     void updateShaderProgram();
 
+    QVector<QVector4D> computeGaussianKernel(int kernelRadius, float sigma);
+
     QMatrix4x4 m_projection;
     QOpenGLShaderProgram m_shaderProgram;
 

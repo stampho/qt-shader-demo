@@ -75,6 +75,7 @@ void MainWindow::onObjectSelected(QListWidgetItem *item)
         break;
     case GLObjectDescriptor::ImageObject:
         objectDescriptor = GLObjectDescriptor::createImageDescriptor(":/images/qt-logo.png");
+        //objectDescriptor = GLObjectDescriptor::createImageDescriptor(":/images/opengl-logo.png");
         break;
     case GLObjectDescriptor::None:
     default:

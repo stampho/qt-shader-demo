@@ -1,5 +1,6 @@
 #include "glwidget.h"
 
+#include <math.h>
 #include <QMouseEvent>
 #include <QTimer>
 #include <QWheelEvent>
@@ -76,6 +77,10 @@ void GLWidget::paintGL()
     if (m_objectDescriptor->hasTextureImage()) {
         m_texture.bind();
         m_shaderProgram.setUniformValue("texture", 0);
+        QSize textureSize = m_objectDescriptor->getTextureImageSize();
+        m_shaderProgram.setUniformValue("textureSize", QVector2D(textureSize.width(), textureSize.height()));
+        m_shaderProgram.setUniformValue("kernelRadius", 4);
+        m_shaderProgram.setUniformValueArray("gaussKernel", computeGaussianKernel(4, 3.5).constData(), 81);
     }
     m_shaderProgram.setUniformValue("animProgress", m_shaderAnimProgress);
 
@@ -238,6 +243,41 @@ void GLWidget::updateShaderProgram()
     m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, m_objectDescriptor->getVertexShaderCode());
     m_shaderProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, m_objectDescriptor->getFragmentShaderCode());
     m_shaderProgram.link();
+}
+
+QVector<QVector4D> GLWidget::computeGaussianKernel(int kernelRadius, float sigma)
+{
+    const int kernelSize = kernelRadius * 2 + 1;
+    QVector<float> kernel(kernelSize * kernelSize);
+    QVector<QVector4D> gaussianKernel;
+
+    float a = 1 / (2 * M_PI * sigma * sigma);
+
+    // sum is used for normalization
+    float sum = 0.0;
+
+    float distance, b, value;
+    int i, j;
+    for (int x = -kernelRadius; x <= kernelRadius; ++x) {
+        for (int y = -kernelRadius; y <= kernelRadius; ++y) {
+            distance = ((x * x) + (y * y)) / (2 * sigma * sigma);
+            b = exp(-distance);
+            value = a * b;
+            sum += value;
+
+            i = x + kernelRadius;
+            j = y + kernelRadius;
+            kernel[j + (i * kernelSize)] = value;
+        }
+    }
+
+    // Normalization
+    for (int i = 0; i < kernelSize * kernelSize; ++i) {
+        value = kernel[i] /= sum;
+        gaussianKernel.append(QVector4D(value, value, value, value));
+    }
+
+    return gaussianKernel;
 }
 
 void GLWidget::shaderAnimTimerTimeout()
