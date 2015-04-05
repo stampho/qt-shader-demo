@@ -1,3 +1,10 @@
+const mat3 GX = mat3(-1.0, 0.0, 1.0,
+                     -2.0, 0.0, 2.0,
+                     -1.0, 0.0, 1.0);
+const mat3 GY = mat3(-1.0, -2.0, -1.0,
+                      0.0,  0.0,  0.0,
+                      1.0,  2.0,  1.0);
+
 float lightness(vec4 color)
 {
     float cmax = max(color[0], max(color[1], color[2]));
@@ -24,7 +31,11 @@ vec4 invert(vec4 color)
     return vec4(1.0 - color[0], 1.0 - color[1], 1.0 - color[2], color[3]);
 }
 
-vec4 gaussBlur(sampler2D tex, vec2 textureSize, vec2 coords, vec4 gaussKernel[81], int kernelRadius)
+vec4 gaussBlur(sampler2D tex,
+               vec2 textureSize,
+               vec2 coords,
+               vec4 gaussKernel[81],
+               int kernelRadius)
 {
     int kernelSize = 2 * kernelRadius + 1;
 
@@ -32,15 +43,66 @@ vec4 gaussBlur(sampler2D tex, vec2 textureSize, vec2 coords, vec4 gaussKernel[81
     float dytex = 1.0 / textureSize[1];
 
     vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
+    vec4 sumCoef = vec4(0.0, 0.0, 0.0, 0.0);
 
     for (int i = -kernelRadius; i <= kernelRadius; ++i) {
         for (int j = -kernelRadius; j <= kernelRadius; ++j) {
             vec4 pixel = texture2D(tex, coords + vec2(float(i) * dxtex, float(j) * dytex));
-            vec4 gauss = gaussKernel[j + (i * kernelSize)];
-            color += pixel * gauss;
+            vec4 coef = gaussKernel[j + (i * kernelSize)];
+
+            sumCoef += coef;
+            color += pixel * coef;
         }
 
     }
 
+    color /= sumCoef;
     return vec4(color.r, color.g, color.b, 1.0);
+}
+
+vec4[2] filteredGradient(sampler2D tex,
+                         vec2 textureSize,
+                         vec2 coords,
+                         vec4 gaussKernel[81],
+                         int kernelRadius)
+{
+    float dxtex = 1.0 / textureSize[0];
+    float dytex = 1.0 / textureSize[1];
+
+    vec4 dx = vec4(0.0); // X Directional Gradient
+    vec4 dy = vec4(0.0); // Y Directional Gradient
+
+    for (int i = -1; i <= 1; ++i) {
+        for (int j = -1; j <= 1; ++j) {
+            vec2 offset = vec2(float(i) * dxtex, float(j) * dytex);
+            vec4 filteredPixel = gaussBlur(tex, textureSize, coords + offset, gaussKernel, kernelRadius);
+            float gx = GX[i+1][j+1];
+            float gy = GY[i+1][j+1];
+            dx += filteredPixel * vec4(gx);
+            dy += filteredPixel * vec4(gy);
+        }
+    }
+
+    vec4 gradient[2];
+    gradient[0] = dx;
+    gradient[1] = dy;
+    return gradient;
+}
+
+vec4 sobel(sampler2D tex,
+           vec2 textureSize,
+           vec2 coords,
+           vec4 gaussKernel[81],
+           int kernelRadius)
+{
+    vec4 gradient[2] = filteredGradient(tex, textureSize, coords, gaussKernel, kernelRadius);
+    vec4 dx = gradient[0];
+    vec4 dy = gradient[1];
+
+    vec4 result;
+    for(int i = 0; i < 4; ++i) {
+        result[i] = length(vec2(dx[i], dy[i]));
+    }
+
+    return vec4(result.r, result.g, result.b, 1.0);
 }
