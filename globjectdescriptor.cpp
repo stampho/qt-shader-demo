@@ -139,23 +139,16 @@ GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(const QString &ima
     shaderBuilder.setMainBody(QOpenGLShader::Vertex, vertexMain);
 
     QStringList fragmentVariables;
-    fragmentVariables.append("const int maxKernelSize = 81; // 9 * 9 = 81 (kernelRadius = 4)");
     fragmentVariables.append("uniform int animProgress;");
     fragmentVariables.append("uniform sampler2D texture;");
     fragmentVariables.append("uniform vec2 textureSize;");
-    fragmentVariables.append("uniform int kernelRadius;");
-    fragmentVariables.append("uniform vec4 gaussKernel[maxKernelSize];");
     fragmentVariables.append("varying vec2 varyingTextureCoordinate;");
     shaderBuilder.setVariables(QOpenGLShader::Fragment, fragmentVariables);
 
     QStringList fragmentMain;
-    //fragmentMain.append("gl_FragColor = texture2D(texture, varyingTextureCoordinate);");
-    //fragmentMain.append("gl_FragColor = gaussBlur(texture, textureSize, varyingTextureCoordinate, gaussKernel, kernelRadius);");
-    //fragmentMain.append("gl_FragColor = canny(texture, textureSize, varyingTextureCoordinate, gaussKernel, kernelRadius);");
     fragmentMain.append("float progress = clamp(animProgress / 100.0, 0.0, 1.0);");
     fragmentMain.append("if (varyingTextureCoordinate[1] > (1.0 - progress)) {");
-    fragmentMain.append("    gl_FragColor = canny(texture, textureSize, varyingTextureCoordinate, gaussKernel, kernelRadius);");
-    //fragmentMain.append("    gl_FragColor = sobel(texture, textureSize, varyingTextureCoordinate, gaussKernel, kernelRadius);");
+    fragmentMain.append("   gl_FragColor = canny(texture, textureSize, varyingTextureCoordinate);");
     //fragmentMain.append("    gl_FragColor = gray(gl_FragColor);");
     //fragmentMain.append("    gl_FragColor = invert(gl_FragColor);");
     fragmentMain.append("} else {");
