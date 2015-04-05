@@ -25,6 +25,7 @@ private slots:
     void rotateObject();
     void setAnimationSpeed(int speed);
     void onObjectSelected(QListWidgetItem *item);
+    void showImageBrowser();
 
 private:
     void initObjectListWidget();
@@ -36,6 +37,8 @@ private:
     QTimer *m_rotateAnimTimer;
 
     QSlider *m_grabbedRotateSlider;
+
+    QString m_textureImagePath;
 };
 
 #endif // MAINWINDOW_H

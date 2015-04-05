@@ -4,6 +4,8 @@
 #include "glwidget.h"
 #include "globjectdescriptor.h"
 
+#include <QFileDialog>
+#include <QPushButton>
 #include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -12,8 +14,11 @@ MainWindow::MainWindow(QWidget *parent)
     , m_rotateSliderTimer(new QTimer(this))
     , m_rotateAnimTimer(new QTimer(this))
     , m_grabbedRotateSlider(0)
+    , m_textureImagePath(":/images/qt-logo.png")
 {
     m_ui->setupUi(this);
+
+    m_ui->loadImageButton->setVisible(false);
 
     initObjectListWidget();
     createConnections();
@@ -71,12 +76,14 @@ void MainWindow::onObjectSelected(QListWidgetItem *item)
 
     switch(item->data(Qt::UserRole).toInt()) {
     case GLObjectDescriptor::CubeObject:
+        m_ui->loadImageButton->setVisible(false);
         objectDescriptor = GLObjectDescriptor::createCubeDescriptor();
         break;
-    case GLObjectDescriptor::ImageObject:
-        objectDescriptor = GLObjectDescriptor::createImageDescriptor(":/images/qt-logo.png");
-        //objectDescriptor = GLObjectDescriptor::createImageDescriptor(":/images/opengl-logo.png");
+    case GLObjectDescriptor::ImageObject: {
+        m_ui->loadImageButton->setVisible(true);
+        objectDescriptor = GLObjectDescriptor::createImageDescriptor(m_textureImagePath);
         break;
+    }
     case GLObjectDescriptor::None:
     default:
         objectDescriptor = 0;
@@ -85,6 +92,17 @@ void MainWindow::onObjectSelected(QListWidgetItem *item)
 
     m_ui->openGLWidget->updateObjectDescriptor(objectDescriptor);
     m_ui->openGLWidget->resetShaderAnimTimer(50);
+}
+
+void MainWindow::showImageBrowser()
+{
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setNameFilter("Images (*.bmp *.jpg *.png)");
+    if (dialog.exec()) {
+        m_textureImagePath = dialog.selectedFiles().first();
+        onObjectSelected(m_ui->objectListWidget->currentItem());
+    }
 }
 
 void MainWindow::initObjectListWidget()
@@ -110,4 +128,5 @@ void MainWindow::createConnections()
     connect(m_ui->objectAnimationSlider, SIGNAL(valueChanged(int)), this, SLOT(setAnimationSpeed(int)));
 
     connect(m_ui->objectListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onObjectSelected(QListWidgetItem*)));
+    connect(m_ui->loadImageButton, SIGNAL(pressed()), this, SLOT(showImageBrowser()));
 }
