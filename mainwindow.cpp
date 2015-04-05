@@ -3,9 +3,12 @@
 
 #include "glwidget.h"
 #include "globjectdescriptor.h"
+#include "shadercodedialog.h"
 
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QPushButton>
+#include <QTextEdit>
 #include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -105,6 +108,27 @@ void MainWindow::showImageBrowser()
     }
 }
 
+void MainWindow::showShaderCode()
+{
+    GLObjectDescriptor *objectDescriptor = m_ui->openGLWidget->getObjectDescriptor();
+
+    ShaderCodeDialog dialog(this);
+    QString code;
+
+    if (sender() == m_ui->showVertexCodeButton) {
+        dialog.setWindowTitle("Vertex CODE");
+        if (objectDescriptor)
+            code = objectDescriptor->getVertexShaderCode();
+    } else {
+        dialog.setWindowTitle("Fragment CODE");
+        if (objectDescriptor)
+            code = objectDescriptor->getFragmentShaderCode();
+    }
+
+    dialog.setContent(code);
+    dialog.exec();
+}
+
 void MainWindow::initObjectListWidget()
 {
     QListWidgetItem *cubeItem = new QListWidgetItem("Cube", m_ui->objectListWidget);
@@ -129,4 +153,6 @@ void MainWindow::createConnections()
 
     connect(m_ui->objectListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onObjectSelected(QListWidgetItem*)));
     connect(m_ui->loadImageButton, SIGNAL(pressed()), this, SLOT(showImageBrowser()));
+    connect(m_ui->showVertexCodeButton, SIGNAL(pressed()), this, SLOT(showShaderCode()));
+    connect(m_ui->showFragmentCodeButton, SIGNAL(pressed()), this, SLOT(showShaderCode()));
 }

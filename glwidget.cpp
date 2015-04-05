@@ -192,6 +192,11 @@ void GLWidget::updateObjectDescriptor(GLObjectDescriptor *objectDescriptor)
     update();
 }
 
+GLObjectDescriptor *GLWidget::getObjectDescriptor() const
+{
+    return m_objectDescriptor.data();
+}
+
 void GLWidget::resetShaderAnimTimer(int msec)
 {
     m_shaderAnimProgress = 0;

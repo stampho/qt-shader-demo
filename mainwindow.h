@@ -26,6 +26,7 @@ private slots:
     void setAnimationSpeed(int speed);
     void onObjectSelected(QListWidgetItem *item);
     void showImageBrowser();
+    void showShaderCode();
 
 private:
     void initObjectListWidget();

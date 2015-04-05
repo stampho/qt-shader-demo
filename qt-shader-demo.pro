@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     glwidget.cpp \
     globjectdescriptor.cpp \
-    shaderbuilder.cpp
+    shaderbuilder.cpp \
+    shadercodedialog.cpp
 
 HEADERS  += mainwindow.h \
     glwidget.h \
     globjectdescriptor.h \
-    shaderbuilder.h
+    shaderbuilder.h \
+    shadercodedialog.h
 
 FORMS    += mainwindow.ui
 

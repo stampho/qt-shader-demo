@@ -32,6 +32,7 @@ public:
 
     void rotate(int angle, Axis::Axis axis);
     void updateObjectDescriptor(GLObjectDescriptor *objectDescriptor);
+    GLObjectDescriptor *getObjectDescriptor() const;
     void resetShaderAnimTimer(int msec);
 
 protected:
