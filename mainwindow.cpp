@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->setupUi(this);
 
     m_ui->loadImageButton->setVisible(false);
+    m_ui->triangleCountSB->setVisible(false);
 
     initObjectListWidget();
     initShaderConfig();
@@ -82,8 +83,22 @@ void MainWindow::updateObjectDescriptor(QListWidgetItem *item)
         item = m_ui->objectListWidget->currentItem();
 
     switch(item->data(Qt::UserRole).toInt()) {
+    case GLObjectDescriptor::ConeObject:
+        m_ui->loadImageButton->setVisible(false);
+        m_ui->triangleCountSB->setVisible(true);
+        m_ui->shaderAnimCB->setEnabled(false);
+        m_shaderConfig.animEnabled = false;
+        m_ui->noneShaderRB->setEnabled(false);
+        m_ui->gaussBlurRB->setEnabled(false);
+        m_ui->sobelRB->setEnabled(false);
+        m_ui->sobelGaussRB->setEnabled(false);
+        m_ui->cannyRB->setEnabled(false);
+        m_shaderConfig.imageProcessShader = ShaderConfig::None;
+        objectDescriptor = GLObjectDescriptor::createConeDescriptor(&m_shaderConfig, m_ui->triangleCountSB->value());
+        break;
     case GLObjectDescriptor::CubeObject:
         m_ui->loadImageButton->setVisible(false);
+        m_ui->triangleCountSB->setVisible(false);
         m_ui->shaderAnimCB->setEnabled(false);
         m_shaderConfig.animEnabled = false;
         m_ui->noneShaderRB->setEnabled(false);
@@ -96,6 +111,7 @@ void MainWindow::updateObjectDescriptor(QListWidgetItem *item)
         break;
     case GLObjectDescriptor::ImageObject: {
         m_ui->loadImageButton->setVisible(true);
+        m_ui->triangleCountSB->setVisible(false);
         m_ui->shaderAnimCB->setEnabled(true);
         m_ui->noneShaderRB->setEnabled(true);
         m_ui->gaussBlurRB->setEnabled(true);
@@ -174,6 +190,9 @@ void MainWindow::updateShaderConfig()
 
 void MainWindow::initObjectListWidget()
 {
+    QListWidgetItem *coneItem = new QListWidgetItem("Cone", m_ui->objectListWidget);
+    coneItem->setData(Qt::UserRole, GLObjectDescriptor::ConeObject);
+
     QListWidgetItem *cubeItem = new QListWidgetItem("Cube", m_ui->objectListWidget);
     cubeItem->setData(Qt::UserRole, GLObjectDescriptor::CubeObject);
 
@@ -240,6 +259,7 @@ void MainWindow::createConnections()
     connect(m_ui->shaderAnimationSlider, SIGNAL(sliderMoved(int)), m_ui->openGLWidget, SLOT(setShaderAnimProgress(int)));
 
     connect(m_ui->cullFaceCB, SIGNAL(toggled(bool)), this, SLOT(updateObjectDescriptor()));
+    connect(m_ui->triangleCountSB, SIGNAL(valueChanged(int)), this, SLOT(updateObjectDescriptor()));
 }
 
 ShaderConfig::IPShader MainWindow::getSelectedIPShader() const

@@ -13,8 +13,10 @@ GLWidget::GLWidget(QWidget *parent)
     , m_shaderAnimTimer(new QTimer(this))
 {
     m_distance = 5.0;
-    m_yRotateAngle = 25;
-    m_xRotateAngle = -25;
+    //m_yRotateAngle = 25;
+    m_yRotateAngle = 0;
+    //m_xRotateAngle = -25;
+    m_xRotateAngle = 0;
     m_xCameraPosition = 0.0;
     m_yCameraPosition = 0.0;
 

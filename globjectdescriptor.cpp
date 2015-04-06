@@ -1,10 +1,80 @@
 #include "globjectdescriptor.h"
 #include "shaderbuilder.h"
 
+#include "math.h"
 #include <QDebug>
 #include <QFileInfo>
 #include <QImage>
 #include <QSize>
+
+GLObjectDescriptor *GLObjectDescriptor::createConeDescriptor(ShaderConfig *shaderConfig, int triangleCount)
+{
+    GLObjectDescriptor *cone = new GLObjectDescriptor();
+
+    float angleStep = 2.0 * M_PI / triangleCount;
+    float angle = 0.0;
+    float radius = 1.0;
+
+    int vertexCount = triangleCount * 3;
+    float coneVertices[vertexCount][3];
+    int coneColors[vertexCount][3];
+
+    for (int i = 0; i < vertexCount; i += 3) {
+        // Cone top
+        coneVertices[i][0] = 0.0;
+        coneVertices[i][1] = 1.0;
+        coneVertices[i][2] = 0.0;
+
+        coneColors[i][0] = 1;
+        coneColors[i][1] = 0;
+        coneColors[i][2] = 0;
+
+        for (int j = 1; j <= 2; ++j) {
+            coneVertices[i + j][0] = radius * cos(angle + (j - 1) * angleStep);
+            coneVertices[i + j][1] = -1.0;
+            coneVertices[i + j][2] = radius * sin(angle + (j - 1) * angleStep);
+
+            int odd = (i + j) % 2;
+            coneColors[i + j][0] = 0;
+            coneColors[i + j][1] = odd;
+            coneColors[i + j][2] = !odd;
+        }
+
+        angle += angleStep;
+    }
+
+    cone->setVertices(coneVertices, vertexCount);
+    cone->setColors(coneColors, vertexCount);
+
+    ShaderBuilder shaderBuilder("120");
+    QStringList vertexVariables;
+    vertexVariables.append("uniform mat4 mvpMatrix;");
+    vertexVariables.append("attribute vec4 vertex;");
+    vertexVariables.append("attribute vec4 color;");
+    vertexVariables.append("varying vec4 varyingColor;");
+    shaderBuilder.setVariables(QOpenGLShader::Vertex, vertexVariables);
+
+    QStringList vertexMain;
+    vertexMain.append("varyingColor = color;");
+    vertexMain.append("gl_Position = mvpMatrix * vertex;");
+    shaderBuilder.setMainBody(QOpenGLShader::Vertex, vertexMain);
+
+    QStringList fragmentVariables;
+    fragmentVariables.append("uniform int animProgress;");
+    fragmentVariables.append("varying vec4 varyingColor;");
+    shaderBuilder.setVariables(QOpenGLShader::Fragment, fragmentVariables);
+
+    QStringList fragmentMain;
+    fragmentMain.append("gl_FragColor = varyingColor;");
+    shaderBuilder.setMainBody(QOpenGLShader::Fragment, fragmentMain);
+
+    shaderBuilder.setShaderConfig(shaderConfig);
+
+    cone->setVertexShaderCode(shaderBuilder.getShaderCode(QOpenGLShader::Vertex));
+    cone->setFragmentShaderCode(shaderBuilder.getShaderCode(QOpenGLShader::Fragment));
+
+    return cone;
+}
 
 GLObjectDescriptor *GLObjectDescriptor::createCubeDescriptor(ShaderConfig *shaderConfig)
 {

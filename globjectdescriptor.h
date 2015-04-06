@@ -14,6 +14,7 @@ class ShaderConfig;
 class GLObjectDescriptor
 {
 public:
+    static GLObjectDescriptor *createConeDescriptor(ShaderConfig* shaderConfig, int triangleCount);
     static GLObjectDescriptor *createCubeDescriptor(ShaderConfig* shaderConfig);
     static GLObjectDescriptor *createImageDescriptor(ShaderConfig* shaderConfig, const QString &imagePath);
 
@@ -42,6 +43,7 @@ public:
 
     enum GLObjectId {
         None,
+        ConeObject,
         CubeObject,
         ImageObject
     };

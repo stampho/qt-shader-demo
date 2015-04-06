@@ -81,6 +81,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QSpinBox" name="triangleCountSB">
+            <property name="minimum">
+             <number>3</number>
+            </property>
+            <property name="maximum">
+             <number>360</number>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="verticalSpacer_4">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
