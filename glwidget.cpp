@@ -200,6 +200,13 @@ void GLWidget::resetShaderAnimTimer(int msec)
     m_shaderAnimTimer->start(msec);
 }
 
+void GLWidget::setShaderAnimProgress(int progress)
+{
+    m_shaderAnimTimer->stop();
+    m_shaderAnimProgress = progress;
+    update();
+}
+
 void GLWidget::updateVertexBuffer()
 {
     int offset = 0;
@@ -250,7 +257,7 @@ void GLWidget::updateShaderProgram()
 void GLWidget::shaderAnimTimerTimeout()
 {
     m_shaderAnimProgress += 5;
-
+    Q_EMIT(timerChangedShaderAnimProgress(m_shaderAnimProgress));
     update();
 
     if (m_shaderAnimProgress >= 100)

@@ -111,7 +111,9 @@ void MainWindow::onObjectSelected(QListWidgetItem *item)
     }
 
     m_ui->openGLWidget->updateObjectDescriptor(objectDescriptor);
-    m_ui->openGLWidget->resetShaderAnimTimer(50);
+    m_ui->shaderAnimationSlider->setEnabled(m_shaderConfig.animEnabled);
+    if (m_shaderConfig.animEnabled)
+        m_ui->openGLWidget->resetShaderAnimTimer(50);
 }
 
 void MainWindow::showImageBrowser()
@@ -226,6 +228,9 @@ void MainWindow::createConnections()
     connect(m_ui->loadImageButton, SIGNAL(pressed()), this, SLOT(showImageBrowser()));
     connect(m_ui->showVertexCodeButton, SIGNAL(pressed()), this, SLOT(showShaderCode()));
     connect(m_ui->showFragmentCodeButton, SIGNAL(pressed()), this, SLOT(showShaderCode()));
+
+    connect(m_ui->openGLWidget, SIGNAL(timerChangedShaderAnimProgress(int)), m_ui->shaderAnimationSlider, SLOT(setValue(int)));
+    connect(m_ui->shaderAnimationSlider, SIGNAL(sliderMoved(int)), m_ui->openGLWidget, SLOT(setShaderAnimProgress(int)));
 }
 
 ShaderConfig::IPShader MainWindow::getSelectedIPShader() const

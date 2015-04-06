@@ -282,6 +282,9 @@ CODE</string>
               <height>16777215</height>
              </size>
             </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
@@ -338,7 +341,7 @@ CODE</string>
           <item row="1" column="1">
            <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Shader Animation Speed</string>
+             <string>Shader Animation Progress</string>
             </property>
            </widget>
           </item>

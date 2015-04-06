@@ -35,6 +35,12 @@ public:
     GLObjectDescriptor *getObjectDescriptor() const;
     void resetShaderAnimTimer(int msec);
 
+public Q_SLOTS:
+    void setShaderAnimProgress(int progress);
+
+signals:
+    void timerChangedShaderAnimProgress(int progress);
+
 protected:
     void initializeGL();
     void resizeGL(int width, int height);
