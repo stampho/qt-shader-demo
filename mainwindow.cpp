@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->loadImageButton->setVisible(false);
 
     initObjectListWidget();
+    initShaderConfig();
     createConnections();
 }
 
@@ -80,11 +81,27 @@ void MainWindow::onObjectSelected(QListWidgetItem *item)
     switch(item->data(Qt::UserRole).toInt()) {
     case GLObjectDescriptor::CubeObject:
         m_ui->loadImageButton->setVisible(false);
-        objectDescriptor = GLObjectDescriptor::createCubeDescriptor();
+        m_ui->shaderAnimCB->setEnabled(false);
+        m_shaderConfig.animEnabled = false;
+        m_ui->noneShaderRB->setEnabled(false);
+        m_ui->gaussBlurRB->setEnabled(false);
+        m_ui->sobelRB->setEnabled(false);
+        m_ui->sobelGaussRB->setEnabled(false);
+        m_ui->cannyRB->setEnabled(false);
+        m_shaderConfig.imageProcessShader = ShaderConfig::None;
+        objectDescriptor = GLObjectDescriptor::createCubeDescriptor(&m_shaderConfig);
         break;
     case GLObjectDescriptor::ImageObject: {
         m_ui->loadImageButton->setVisible(true);
-        objectDescriptor = GLObjectDescriptor::createImageDescriptor(m_textureImagePath);
+        m_ui->shaderAnimCB->setEnabled(true);
+        m_ui->noneShaderRB->setEnabled(true);
+        m_ui->gaussBlurRB->setEnabled(true);
+        m_ui->sobelRB->setEnabled(true);
+        m_ui->sobelGaussRB->setEnabled(true);
+        m_ui->cannyRB->setEnabled(true);
+        m_shaderConfig.imageProcessShader = getSelectedIPShader();
+        m_shaderConfig.animEnabled = m_ui->shaderAnimCB->isChecked();
+        objectDescriptor = GLObjectDescriptor::createImageDescriptor(&m_shaderConfig, m_textureImagePath);
         break;
     }
     case GLObjectDescriptor::None:
@@ -129,6 +146,23 @@ void MainWindow::showShaderCode()
     dialog.exec();
 }
 
+void MainWindow::updateShaderConfig()
+{
+    if (sender() == m_ui->shaderAnimCB) {
+        m_shaderConfig.animEnabled = m_ui->shaderAnimCB->isChecked();
+    } else if (sender() == m_ui->shaderGrayCB) {
+        m_shaderConfig.gray = m_ui->shaderGrayCB->isChecked();
+    } else if (sender() == m_ui->shaderInvertCB) {
+        m_shaderConfig.invert = m_ui->shaderInvertCB->isChecked();
+    } else if (sender() == m_ui->shaderThresholdCB) {
+        m_shaderConfig.threshold = m_ui->shaderThresholdCB->isChecked();
+    } else if(sender() == m_ui->shaderButtonGroup) {
+        m_shaderConfig.imageProcessShader = getSelectedIPShader();
+    }
+
+    onObjectSelected(m_ui->objectListWidget->currentItem());
+}
+
 void MainWindow::initObjectListWidget()
 {
     QListWidgetItem *cubeItem = new QListWidgetItem("Cube", m_ui->objectListWidget);
@@ -136,6 +170,44 @@ void MainWindow::initObjectListWidget()
 
     QListWidgetItem *imageItem = new QListWidgetItem("Image", m_ui->objectListWidget);
     imageItem->setData(Qt::UserRole, GLObjectDescriptor::ImageObject);
+
+    connect(m_ui->objectListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onObjectSelected(QListWidgetItem*)));
+}
+
+void MainWindow::initShaderConfig()
+{
+    m_shaderConfig.animEnabled = false;
+    m_ui->shaderAnimCB->setChecked(m_shaderConfig.animEnabled);
+    m_ui->shaderAnimCB->setEnabled(false);
+    connect(m_ui->shaderAnimCB, SIGNAL(toggled(bool)), this, SLOT(updateShaderConfig()));
+
+    m_shaderConfig.gray = false;
+    m_ui->shaderGrayCB->setChecked(m_shaderConfig.gray);
+    m_ui->shaderGrayCB->setEnabled(true);
+    connect(m_ui->shaderGrayCB, SIGNAL(toggled(bool)), this, SLOT(updateShaderConfig()));
+
+    m_shaderConfig.invert = false;
+    m_ui->shaderInvertCB->setChecked(m_shaderConfig.invert);
+    m_ui->shaderInvertCB->setEnabled(true);
+    connect(m_ui->shaderInvertCB, SIGNAL(toggled(bool)), this, SLOT(updateShaderConfig()));
+
+    m_shaderConfig.threshold = false;
+    m_ui->shaderThresholdCB->setChecked(m_shaderConfig.threshold);
+    m_ui->shaderThresholdCB->setEnabled(true);
+    connect(m_ui->shaderThresholdCB, SIGNAL(toggled(bool)), this, SLOT(updateShaderConfig()));
+
+    m_shaderConfig.imageProcessShader = ShaderConfig::None;
+    m_ui->noneShaderRB->setChecked(true);
+    m_ui->noneShaderRB->setEnabled(false);
+    m_ui->gaussBlurRB->setChecked(false);
+    m_ui->gaussBlurRB->setEnabled(false);
+    m_ui->sobelRB->setChecked(false);
+    m_ui->sobelRB->setEnabled(false);
+    m_ui->sobelGaussRB->setChecked(false);
+    m_ui->sobelGaussRB->setEnabled(false);
+    m_ui->cannyRB->setChecked(false);
+    m_ui->cannyRB->setEnabled(false);
+    connect(m_ui->shaderButtonGroup, SIGNAL(buttonToggled(QAbstractButton*,bool)), this, SLOT(updateShaderConfig()));
 }
 
 void MainWindow::createConnections()
@@ -151,8 +223,24 @@ void MainWindow::createConnections()
 
     connect(m_ui->objectAnimationSlider, SIGNAL(valueChanged(int)), this, SLOT(setAnimationSpeed(int)));
 
-    connect(m_ui->objectListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onObjectSelected(QListWidgetItem*)));
     connect(m_ui->loadImageButton, SIGNAL(pressed()), this, SLOT(showImageBrowser()));
     connect(m_ui->showVertexCodeButton, SIGNAL(pressed()), this, SLOT(showShaderCode()));
     connect(m_ui->showFragmentCodeButton, SIGNAL(pressed()), this, SLOT(showShaderCode()));
+}
+
+ShaderConfig::IPShader MainWindow::getSelectedIPShader() const
+{
+    QAbstractButton *selected = m_ui->shaderButtonGroup->checkedButton();
+    if (selected == m_ui->noneShaderRB)
+        return ShaderConfig::None;
+    if (selected == m_ui->gaussBlurRB)
+        return ShaderConfig::Gauss;
+    if (selected == m_ui->sobelRB)
+        return ShaderConfig::Sobel;
+    if (selected == m_ui->sobelGaussRB)
+        return ShaderConfig::SobelGauss;
+    if (selected == m_ui->cannyRB)
+        return ShaderConfig::Canny;
+
+    return ShaderConfig::None;
 }

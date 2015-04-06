@@ -81,7 +81,7 @@
             <property name="sizeHint" stdset="0">
              <size>
               <width>20</width>
-              <height>40</height>
+              <height>10</height>
              </size>
             </property>
            </spacer>
@@ -96,16 +96,94 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QCheckBox" name="checkBox">
+           <widget class="QCheckBox" name="shaderAnimCB">
             <property name="text">
-             <string>CheckBox</string>
+             <string>Animation</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_2">
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="noneShaderRB">
             <property name="text">
-             <string>CheckBox</string>
+             <string>None</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">shaderButtonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="gaussBlurRB">
+            <property name="text">
+             <string>Gauss B&amp;lur</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">shaderButtonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="sobelRB">
+            <property name="text">
+             <string>Sobe&amp;l</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">shaderButtonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="sobelGaussRB">
+            <property name="text">
+             <string>Gauss + Sobel</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">shaderButtonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="cannyRB">
+            <property name="text">
+             <string>Canny</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">shaderButtonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="shaderGrayCB">
+            <property name="text">
+             <string>Gray Scale</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="shaderInvertCB">
+            <property name="text">
+             <string>Invert Colors</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="shaderThresholdCB">
+            <property name="text">
+             <string>Threshold (0.5)</string>
             </property>
            </widget>
           </item>
@@ -361,4 +439,7 @@ CODE</string>
  </customwidgets>
  <resources/>
  <connections/>
+ <buttongroups>
+  <buttongroup name="shaderButtonGroup"/>
+ </buttongroups>
 </ui>

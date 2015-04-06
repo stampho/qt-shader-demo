@@ -9,12 +9,13 @@
 #include <QVector>
 
 class QImage;
+class ShaderConfig;
 
 class GLObjectDescriptor
 {
 public:
-    static GLObjectDescriptor *createCubeDescriptor();
-    static GLObjectDescriptor *createImageDescriptor(const QString &imagePath);
+    static GLObjectDescriptor *createCubeDescriptor(ShaderConfig* shaderConfig);
+    static GLObjectDescriptor *createImageDescriptor(ShaderConfig* shaderConfig, const QString &imagePath);
 
     GLObjectDescriptor(const QString &imagePath = QString());
     ~GLObjectDescriptor();

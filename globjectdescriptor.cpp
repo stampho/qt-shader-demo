@@ -1,13 +1,12 @@
 #include "globjectdescriptor.h"
+#include "shaderbuilder.h"
 
 #include <QDebug>
 #include <QFileInfo>
 #include <QImage>
 #include <QSize>
 
-#include "shaderbuilder.h"
-
-GLObjectDescriptor *GLObjectDescriptor::createCubeDescriptor()
+GLObjectDescriptor *GLObjectDescriptor::createCubeDescriptor(ShaderConfig *shaderConfig)
 {
     GLObjectDescriptor *cube = new GLObjectDescriptor();
 
@@ -89,13 +88,15 @@ GLObjectDescriptor *GLObjectDescriptor::createCubeDescriptor()
     fragmentMain.append("gl_FragColor = varyingColor;");
     shaderBuilder.setMainBody(QOpenGLShader::Fragment, fragmentMain);
 
+    shaderBuilder.setShaderConfig(shaderConfig);
+
     cube->setVertexShaderCode(shaderBuilder.getShaderCode(QOpenGLShader::Vertex));
     cube->setFragmentShaderCode(shaderBuilder.getShaderCode(QOpenGLShader::Fragment));
 
     return cube;
 }
 
-GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(const QString &imagePath)
+GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(ShaderConfig *shaderConfig, const QString &imagePath)
 {
     GLObjectDescriptor *image = new GLObjectDescriptor(imagePath);
     if (!image->hasTextureImage()) {
@@ -146,16 +147,10 @@ GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(const QString &ima
     shaderBuilder.setVariables(QOpenGLShader::Fragment, fragmentVariables);
 
     QStringList fragmentMain;
-    fragmentMain.append("float progress = clamp(animProgress / 100.0, 0.0, 1.0);");
-    fragmentMain.append("if (varyingTextureCoordinate[1] > (1.0 - progress)) {");
-    fragmentMain.append("   gl_FragColor = canny(texture, textureSize, varyingTextureCoordinate);");
-    //fragmentMain.append("    gl_FragColor = gray(gl_FragColor);");
-    //fragmentMain.append("    gl_FragColor = invert(gl_FragColor);");
-    fragmentMain.append("} else {");
-    fragmentMain.append("   gl_FragColor = texture2D(texture, varyingTextureCoordinate);");
-    fragmentMain.append("}");
-
+    fragmentMain.append("gl_FragColor = texture2D(texture, varyingTextureCoordinate);");
     shaderBuilder.setMainBody(QOpenGLShader::Fragment, fragmentMain);
+
+    shaderBuilder.setShaderConfig(shaderConfig);
 
     image->setVertexShaderCode(shaderBuilder.getShaderCode(QOpenGLShader::Vertex));
     image->setFragmentShaderCode(shaderBuilder.getShaderCode(QOpenGLShader::Fragment));

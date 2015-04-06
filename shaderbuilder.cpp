@@ -88,6 +88,11 @@ QStringList ShaderBuilder::getMainBody(QOpenGLShader::ShaderType type) const
     return m_mainBody.value(type);
 }
 
+void ShaderBuilder::setShaderConfig(ShaderConfig *shaderConfig)
+{
+    m_shaderConfig = shaderConfig;
+}
+
 QStringList ShaderBuilder::getShaderCode(QOpenGLShader::ShaderType type) const
 {
     QStringList functionsCode;
@@ -114,12 +119,52 @@ QStringList ShaderBuilder::getShaderCode(QOpenGLShader::ShaderType type) const
     shaderCode.append(getVariables(type));
     shaderCode.append("\n");
 
+    QString indent("\t");
     shaderCode.append("void main(void)");
     shaderCode.append("{");
     foreach (QString mainBodyLine, getMainBody(type)) {
-        shaderCode.append(QString("\t%0").arg(mainBodyLine));
+        shaderCode.append(QString("%0%1").arg(indent, mainBodyLine));
     }
-    shaderCode.append("}");
+
+    if (type == QOpenGLShader::Fragment && m_shaderConfig) {
+        if (m_shaderConfig->animEnabled) {
+            shaderCode.append(QString("%0float progress = clamp(animProgress / 100.0, 0.0, 1.0);").arg(indent));
+            shaderCode.append(QString("%0if (varyingTextureCoordinate.y > (1.0 - progress)) {").arg(indent));
+            indent += "\t";
+        }
+
+        switch(m_shaderConfig->imageProcessShader) {
+        case ShaderConfig::Gauss:
+            shaderCode.append(QString("%0gl_FragColor = gaussBlur(texture, textureSize, varyingTextureCoordinate);").arg(indent));
+            break;
+        case ShaderConfig::Sobel:
+            shaderCode.append(QString("%0gl_FragColor = sobel(texture, textureSize, varyingTextureCoordinate, false);").arg(indent));
+            break;
+        case ShaderConfig::SobelGauss:
+            shaderCode.append(QString("%0gl_FragColor = sobel(texture, textureSize, varyingTextureCoordinate, true);").arg(indent));
+            break;
+        case ShaderConfig::Canny:
+            shaderCode.append(QString("%0gl_FragColor = canny(texture, textureSize, varyingTextureCoordinate);").arg(indent));
+            break;
+        case ShaderConfig::None:
+        default:
+            break;
+        }
+
+        if (m_shaderConfig->gray)
+            shaderCode.append(QString("%0gl_FragColor = gray(gl_FragColor);").arg(indent));
+
+        if (m_shaderConfig->invert)
+            shaderCode.append(QString("%0gl_FragColor = invert(gl_FragColor);").arg(indent));
+
+        if (m_shaderConfig->threshold)
+            shaderCode.append(QString("%0gl_FragColor = threshold(gl_FragColor, 0.5);").arg(indent));
+
+    }
+    if (type == QOpenGLShader::Fragment && m_shaderConfig && m_shaderConfig->animEnabled)
+        shaderCode.append(QString("%0}").arg(indent));
+
+    shaderCode.append("}"); // close main
 
     return shaderCode;
 }

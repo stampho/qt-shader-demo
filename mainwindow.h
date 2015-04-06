@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "shaderbuilder.h"
 
 class QListWidgetItem;
 class QSlider;
@@ -27,10 +28,14 @@ private slots:
     void onObjectSelected(QListWidgetItem *item);
     void showImageBrowser();
     void showShaderCode();
+    void updateShaderConfig();
 
 private:
     void initObjectListWidget();
+    void initShaderConfig();
     void createConnections();
+
+    ShaderConfig::IPShader getSelectedIPShader() const;
 
     Ui::MainWindow *m_ui;
 
@@ -40,6 +45,7 @@ private:
     QSlider *m_grabbedRotateSlider;
 
     QString m_textureImagePath;
+    ShaderConfig m_shaderConfig;
 };
 
 #endif // MAINWINDOW_H
