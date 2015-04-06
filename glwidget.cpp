@@ -60,6 +60,11 @@ void GLWidget::paintGL()
     else
         glDisable(GL_CULL_FACE);
 
+    if (m_objectDescriptor->isPolygonLineModeEnabled())
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     QMatrix4x4 mMatrix;
     QMatrix4x4 vMatrix;
 

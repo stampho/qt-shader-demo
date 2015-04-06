@@ -231,6 +231,7 @@ GLObjectDescriptor *GLObjectDescriptor::createImageDescriptor(ShaderConfig *shad
 GLObjectDescriptor::GLObjectDescriptor(const QString &imagePath)
     : m_image(0)
     , m_cullFaceEnabled(false)
+    , m_polygonLineModeEnabled(false)
 {
     QFileInfo imageFile(imagePath);
     if (imageFile.exists() && imageFile.isFile())

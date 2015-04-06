@@ -74,6 +74,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="polygonLineCB">
+            <property name="text">
+             <string>Enable Lines</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="loadImageButton">
             <property name="text">
              <string>Load Image</string>

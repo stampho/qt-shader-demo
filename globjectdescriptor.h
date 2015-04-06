@@ -41,6 +41,9 @@ public:
     void setCullFace(bool enabled) { m_cullFaceEnabled = enabled; }
     bool isCullFaceEnabled() const { return m_cullFaceEnabled; }
 
+    void setPolygonLineMode(bool enabled) { m_polygonLineModeEnabled = enabled; }
+    bool isPolygonLineModeEnabled() const { return m_polygonLineModeEnabled; }
+
     enum GLObjectId {
         None,
         ConeObject,
@@ -103,6 +106,7 @@ private:
     QStringList m_fragmentShaderCode;
 
     bool m_cullFaceEnabled;
+    bool m_polygonLineModeEnabled;
 };
 
 #endif // GLOBJECTDESCRIPTOR_H

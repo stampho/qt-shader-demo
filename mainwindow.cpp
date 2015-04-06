@@ -129,8 +129,10 @@ void MainWindow::updateObjectDescriptor(QListWidgetItem *item)
         break;
     }
 
-    if (objectDescriptor)
+    if (objectDescriptor) {
         objectDescriptor->setCullFace(m_ui->cullFaceCB->isChecked());
+        objectDescriptor->setPolygonLineMode(m_ui->polygonLineCB->isChecked());
+    }
 
     m_ui->openGLWidget->updateObjectDescriptor(objectDescriptor);
 
@@ -259,6 +261,7 @@ void MainWindow::createConnections()
     connect(m_ui->shaderAnimationSlider, SIGNAL(sliderMoved(int)), m_ui->openGLWidget, SLOT(setShaderAnimProgress(int)));
 
     connect(m_ui->cullFaceCB, SIGNAL(toggled(bool)), this, SLOT(updateObjectDescriptor()));
+    connect(m_ui->polygonLineCB, SIGNAL(toggled(bool)), this, SLOT(updateObjectDescriptor()));
     connect(m_ui->triangleCountSB, SIGNAL(valueChanged(int)), this, SLOT(updateObjectDescriptor()));
 }
 
