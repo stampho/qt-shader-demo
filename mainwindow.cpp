@@ -74,9 +74,12 @@ void MainWindow::setAnimationSpeed(int speed)
     m_rotateAnimTimer->start(max - speed);
 }
 
-void MainWindow::onObjectSelected(QListWidgetItem *item)
+void MainWindow::updateObjectDescriptor(QListWidgetItem *item)
 {
     GLObjectDescriptor *objectDescriptor;
+
+    if (!item)
+        item = m_ui->objectListWidget->currentItem();
 
     switch(item->data(Qt::UserRole).toInt()) {
     case GLObjectDescriptor::CubeObject:
@@ -110,7 +113,11 @@ void MainWindow::onObjectSelected(QListWidgetItem *item)
         break;
     }
 
+    if (objectDescriptor)
+        objectDescriptor->setCullFace(m_ui->cullFaceCB->isChecked());
+
     m_ui->openGLWidget->updateObjectDescriptor(objectDescriptor);
+
     m_ui->shaderAnimationSlider->setEnabled(m_shaderConfig.animEnabled);
     if (m_shaderConfig.animEnabled)
         m_ui->openGLWidget->resetShaderAnimTimer(50);
@@ -123,7 +130,7 @@ void MainWindow::showImageBrowser()
     dialog.setNameFilter("Images (*.bmp *.jpg *.png)");
     if (dialog.exec()) {
         m_textureImagePath = dialog.selectedFiles().first();
-        onObjectSelected(m_ui->objectListWidget->currentItem());
+        updateObjectDescriptor();
     }
 }
 
@@ -162,7 +169,7 @@ void MainWindow::updateShaderConfig()
         m_shaderConfig.imageProcessShader = getSelectedIPShader();
     }
 
-    onObjectSelected(m_ui->objectListWidget->currentItem());
+    updateObjectDescriptor();
 }
 
 void MainWindow::initObjectListWidget()
@@ -173,7 +180,7 @@ void MainWindow::initObjectListWidget()
     QListWidgetItem *imageItem = new QListWidgetItem("Image", m_ui->objectListWidget);
     imageItem->setData(Qt::UserRole, GLObjectDescriptor::ImageObject);
 
-    connect(m_ui->objectListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onObjectSelected(QListWidgetItem*)));
+    connect(m_ui->objectListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(updateObjectDescriptor(QListWidgetItem*)));
 }
 
 void MainWindow::initShaderConfig()
@@ -231,6 +238,8 @@ void MainWindow::createConnections()
 
     connect(m_ui->openGLWidget, SIGNAL(timerChangedShaderAnimProgress(int)), m_ui->shaderAnimationSlider, SLOT(setValue(int)));
     connect(m_ui->shaderAnimationSlider, SIGNAL(sliderMoved(int)), m_ui->openGLWidget, SLOT(setShaderAnimProgress(int)));
+
+    connect(m_ui->cullFaceCB, SIGNAL(toggled(bool)), this, SLOT(updateObjectDescriptor()));
 }
 
 ShaderConfig::IPShader MainWindow::getSelectedIPShader() const

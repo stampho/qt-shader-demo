@@ -67,6 +67,13 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
+           <widget class="QCheckBox" name="cullFaceCB">
+            <property name="text">
+             <string>Enable Cull Face</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="loadImageButton">
             <property name="text">
              <string>Load Image</string>

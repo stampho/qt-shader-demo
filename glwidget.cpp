@@ -29,8 +29,6 @@ void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
     glEnable(GL_DEPTH_TEST);
-    // TODO(pvarga): Add button for the GL_CULL_FACE
-    //glEnable(GL_CULL_FACE);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     m_vertexBuffer.create();
@@ -54,6 +52,11 @@ void GLWidget::paintGL()
     // If object descriptor is not set there is nothing to paint
     if (m_objectDescriptor.isNull())
         return;
+
+    if (m_objectDescriptor->isCullFaceEnabled())
+        glEnable(GL_CULL_FACE);
+    else
+        glDisable(GL_CULL_FACE);
 
     QMatrix4x4 mMatrix;
     QMatrix4x4 vMatrix;

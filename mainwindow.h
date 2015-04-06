@@ -25,7 +25,7 @@ private slots:
     void onRotateSliderMoved();
     void rotateObject();
     void setAnimationSpeed(int speed);
-    void onObjectSelected(QListWidgetItem *item);
+    void updateObjectDescriptor(QListWidgetItem *item = 0);
     void showImageBrowser();
     void showShaderCode();
     void updateShaderConfig();

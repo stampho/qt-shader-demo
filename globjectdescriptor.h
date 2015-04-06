@@ -37,6 +37,9 @@ public:
     QString getVertexShaderCode() const { return m_vertexShaderCode.join("\n"); }
     QString getFragmentShaderCode() const { return m_fragmentShaderCode.join("\n"); }
 
+    void setCullFace(bool enabled) { m_cullFaceEnabled = enabled; }
+    bool isCullFaceEnabled() const { return m_cullFaceEnabled; }
+
     enum GLObjectId {
         None,
         CubeObject,
@@ -96,6 +99,8 @@ private:
 
     QStringList m_vertexShaderCode;
     QStringList m_fragmentShaderCode;
+
+    bool m_cullFaceEnabled;
 };
 
 #endif // GLOBJECTDESCRIPTOR_H
