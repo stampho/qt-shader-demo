@@ -30,9 +30,9 @@ GLObjectDescriptor *GLObjectDescriptor::createConeDescriptor(ShaderConfig *shade
         coneColors[i][2] = 0;
 
         for (int j = 1; j <= 2; ++j) {
-            coneVertices[i + j][0] = radius * cos(angle + (j - 1) * angleStep);
+            coneVertices[i + j][0] = radius * sin(angle + (j - 1) * angleStep);
             coneVertices[i + j][1] = -1.0;
-            coneVertices[i + j][2] = radius * sin(angle + (j - 1) * angleStep);
+            coneVertices[i + j][2] = radius * cos(angle + (j - 1) * angleStep);
 
             int odd = (i + j) % 2;
             coneColors[i + j][0] = 0;
